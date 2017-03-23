@@ -1,3 +1,7 @@
+.github/
+.phpcd/
+.swp
+.sql
 /node_modules
 /public/storage
 /public/hot
