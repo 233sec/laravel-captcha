@@ -7,8 +7,7 @@
 Route::get('/', 'FrontendController@index')->name('index');
 Route::get('macros', 'FrontendController@macros')->name('macros');
 
-Route::get('/recaptcha/api2/userverify', 'CaptchaController@userverify')->name('zh');                              # user verify
-Route::get('/recaptcha/api2/siteverify', 'CaptchaController@siteverify')->name('zh');                              # site verify
+Route::get('/recaptcha/worker.js', 'CaptchaController@pow')->name('captcha.pow');                                  # api.js
 Route::get('/recaptcha/api.js', 'CaptchaController@api')->name('captcha.loader');                                  # api.js
 Route::get('/recaptcha/api2/r20170315121834/recaptcha__zh_cn.js', 'CaptchaController@js')->name('captcha.js');     # recaptcha.js
 Route::get('/recaptcha/api2/r20170315121834/styles__ltr.css', 'CaptchaController@css')->name('captcha.css');       # style.css
