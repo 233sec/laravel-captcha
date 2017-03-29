@@ -18,7 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::any('/recaptcha/api2/demo', '\App\Http\Controllers\Frontend\CaptchaController@demo')->name('frontend.captcha.demo');                                    # 角标
-Route::get('/recaptcha/worker.js', '\App\Http\Controllers\Frontend\CaptchaController@pow')->name('frontend.captcha.pow');                                      # api.js
+Route::get('/recaptcha/P0W.js', '\App\Http\Controllers\Frontend\CaptchaController@pow')->name('frontend.captcha.pow');                                      # api.js
 Route::get('/recaptcha/api.js', '\App\Http\Controllers\Frontend\CaptchaController@apiJs')->name('frontend.captcha.loader');                                    # api.js
 Route::get('/recaptcha/api2/r20170315121834/message.js', '\App\Http\Controllers\Frontend\CaptchaController@messageJs')->name('frontend.captcha.message');      # recaptcha.js
 Route::get('/recaptcha/api2/r20170315121834/recaptcha__zh_cn.js', '\App\Http\Controllers\Frontend\CaptchaController@js')->name('frontend.captcha.js');         # recaptcha.js

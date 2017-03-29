@@ -74,10 +74,13 @@ class CaptchaController extends Controller
         $factor_one = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_two = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
+        $factor_fou = (int)    1; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
-        $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax]));
+        $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax, $factor_fou]));
 
-        $challenge  = (array)  [$factor_one, $factor_hax, $factor_cga, $factor_two];
+        $challenge  = (array)  [$factor_one, $factor_hax, $factor_cga, $factor_two, $factor_fou];
+
+        # Cache set factor_one && factor_two
 
         return response()->view('frontend.captcha.pow', ['challenge' => $challenge, 'global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
     }
@@ -113,6 +116,8 @@ class CaptchaController extends Controller
 
         if($q[2] != $q[0] * $p)
             return Response::json(['success' => false, 'error_codes' => ['INVALID_POW_ANSWER']]);
+
+        # Cache del factor_one && factor_two
 
         $ua = $request->server('HTTP_USER_AGENT');
         $ua = parse_user_agent($ua);

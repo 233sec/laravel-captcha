@@ -98,9 +98,12 @@
 
             app = this;
             (function(app){
-                setTimeout(function(){
-                    app.challenge();
-                }, 1000);
+
+                if({{ $global_var }}[3]){
+                    setTimeout(function(){
+                        app.challenge();
+                    }, 1000);
+                }
 
                 app.messenger.listen(function (msg) {
                     try{
