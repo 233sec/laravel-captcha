@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "12ab7a306664f49903b5eda78cae9e66",
-    "content-hash": "1a3b817fded0c3a49bbe2bfa81fdcc99",
+    "hash": "5b1b6b4ad5009f6066f2474414ae2f1a",
+    "content-hash": "c0919118d50fe35c1d652295210574eb",
     "packages": [
         {
             "name": "arcanedev/log-viewer",
@@ -282,6 +282,42 @@
                 "laravel"
             ],
             "time": "2017-01-30 21:16:53"
+        },
+        {
+            "name": "dittertp/gibberish-aes-php",
+            "version": "v1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dittertp/gibberish-aes-php.git",
+                "reference": "2ab3f6416b5e0f8272c3c817b029a65bc3d89b1b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/dittertp/gibberish-aes-php/2ab3f6416b5e0f8272c3c817b029a65bc3d89b1b.zip",
+                "reference": "2ab3f6416b5e0f8272c3c817b029a65bc3d89b1b",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "GibberishAES": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "The MIT License (MIT)"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Tcholakov"
+                }
+            ],
+            "description": "AES encryption library",
+            "keywords": [
+                "aes",
+                "encryption"
+            ],
+            "time": "2014-11-15 08:32:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",

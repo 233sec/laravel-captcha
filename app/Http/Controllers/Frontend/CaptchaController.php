@@ -94,6 +94,9 @@ class CaptchaController extends Controller
         #
         # 若满分75分以上 通过
 
+        if($request->method() != 'POST')
+            return Response::json(['success' => false, 'error_codes' => ['POST_ONLY'], ]);
+
         $appkey = $request->get('k', null);
         $score = 0;
 
@@ -103,6 +106,7 @@ class CaptchaController extends Controller
         $p = $request->input('p');
         $q = $request->input('q');
         $q = json_decode(decrypt($q));
+        $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
 
         if(!$q[0] || !$q[1] || !$q[2])
             return Response::json(['success' => false, 'error_codes' => ['INVALID_POW']]);
@@ -216,10 +220,10 @@ class CaptchaController extends Controller
             $remoteip  = $request->$method('remoteip', null);
 
             $this->validate($request, [
-                'k' => 'required|min:10|max:40',
-                'secret' => 'required|min:10|max:40',
+                'k'        => 'required|min:10|max:40',
+                'secret'   => 'required|min:10|max:40',
                 'response' => 'required|min:40|max:256',
-                'remoteip' => 'optional|min:7|max:15'
+                'remoteip' => 'nullable|ip'
             ]);
 
             # 验证appkey 和 appsecret

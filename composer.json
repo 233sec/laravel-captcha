@@ -14,13 +14,14 @@
         "arcanedev/no-captcha": "~3.0",
         "creativeorange/gravatar": "~1.0",
         "davejamesmiller/laravel-breadcrumbs": "^3.0",
+        "dittertp/gibberish-aes-php": "^1.1",
+        "donatj/phpuseragentparser": "*",
         "hieu-le/active": "~3.0",
         "laravel/framework": "5.4.*",
         "laravel/socialite": "^3.0",
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "5.4.*",
-        "yajra/laravel-datatables-oracle": "^7.0",
-        "donatj/phpuseragentparser": "*"
+        "yajra/laravel-datatables-oracle": "^7.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

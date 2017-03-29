@@ -6,6 +6,13 @@
 (function(a){
     var $ = {
         md5: md5,
+        messenger: null,
+        enc: function(t, k){
+            return GibberishAES.enc(t, k);
+        },
+        dec: function(e, k){
+            return GibberishAES.dec(e, k);
+        },
         ajax: function(a){
             'undefined' == a.success ? a.success = function(a){} : 0;
             'undefined' == a.error ? a.error = function(a){} : 0;
@@ -59,29 +66,21 @@
             }
             xmlhttp.send(a.data);
         },
-        init: function(){
-            var messenger = new Messenger('xcaptcha_frame', 'xCAPTCHA');
-
-            messenger.listen(function (msg) {
-                console.log('MSG REV:');
-                console.log(msg);
-            });
-
-            messenger.addTarget(window.parent, 'parent');
-
+        userverify: function(json, app){
             for(i = 0; i < 100000; i++){
                 if($.md5((i * {{ $global_var }}[0]).toString()) == {{ $global_var }}[1]){
                     $.ajax({
                         url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
                         data: {
                             q: {{ $global_var }}[2],
-                            p: i
+                            p: app.enc(i, i).replace(/[\r\n]/g, ''),
+                            m: app.enc(JSON.stringify(json.data), i).replace(/[\r\n]/g, '')
                         },
                         type: 'POST',
                         dataType: 'json',
                         success: function(a){
                             try{
-                                messenger.targets['parent'].send(JSON.stringify(a));
+                                app.messenger.targets['parent'].send(JSON.stringify(a));
                             }catch(e){
                                 alert('xCAPTCHA 初始化未成功');
                             }
@@ -91,7 +90,37 @@
                     break;
                 }
             }
+        },
+        init: function(){
+            this.messenger = new Messenger('xcaptcha_frame', 'xCAPTCHA');
 
+            this.messenger.addTarget(window.parent, 'parent');
+
+            app = this;
+            (function(app){
+                setTimeout(function(){
+                    app.challenge();
+                }, 1000);
+
+                app.messenger.listen(function (msg) {
+                    try{
+                        var json = JSON.parse(msg);
+                        if('string' == typeof json.callback && 'function' == typeof app[json.callback]){
+                            app[json.callback](json, app);
+                        }
+                    }catch(e){}
+                        console.log('MSG REV:');
+                    console.log(msg);
+                });
+
+            })(app);
+        },
+        challenge: function(){
+            this.messenger.targets['parent'].send(JSON.stringify({
+                success: false,
+                error_codes: ['POST_MOUSE'],
+                callback: 'userverify'
+            }));
         }
     };
     $.init();
