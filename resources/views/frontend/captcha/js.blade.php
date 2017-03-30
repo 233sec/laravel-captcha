@@ -87,7 +87,7 @@
                 clearInterval(app._tx);
                 if(1 == {{ $global_var }}[3]){
                     app.challenge();
-                    app.userverify();
+                    app.userverify({data:{}, answer:{}}, app);
                 }  else {
                     $.id('l_captcha_widget').className = 'verify';
                     $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
