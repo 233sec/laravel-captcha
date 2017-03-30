@@ -73,47 +73,83 @@
             }
             xmlhttp.send(a.data);
         },
+        _tx: null,
+        pow: function(app){
+            delete({{ $global_var }});
+
+            (function(i,s,o,g,r,a,m){i['gxp']=r;i[r]=i[r]||function(){
+                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.className='xtv';a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','{{ route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) }}'.replace(/9999/g, function(){return (new Date).getTime();}),'xa');
+
+            app._tx = setInterval(function(){
+                if('undefined' == typeof {{ $global_var }}) return;
+                clearInterval(app._tx);
+                if(1 == {{ $global_var }}[3]){
+                    app.challenge();
+                    app.userverify();
+                }  else {
+                    $.id('l_captcha_widget').className = 'verify';
+                    $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                    app.fallback_load();
+                }
+                for(i = 0; i < 100000000; i++){
+                    if($.md5((i * {{ $global_var }}[0]).toString()) == {{ $global_var }}[1]){
+                        app.answer = i;
+                        console.log(i);
+                        break;
+                    }
+                }
+            }, 100);
+
+            return;
+        },
+        answer: -1,
+        fallback_answer: '',
         userverify: function(json, app){
-            for(i = 0; i < 100000; i++){
-                var data = {
-                    a: 9,
-                    q: {{ $global_var }}[2],
-                    p: app.enc(i, i).replace(/[\r\n]/g, ''),
-                    m: app.enc(JSON.stringify(json.data), i).replace(/[\r\n]/g, '')
-                };
-                if(json.type == 'VERIFY_FALLBACK'){
-                    data['a'] = 4;
-                }
-                if($.md5((i * {{ $global_var }}[0]).toString()) == {{ $global_var }}[1]){
-                    $.ajax({
-                        url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
-                        data: data,
-                        type: 'POST',
-                        dataType: 'json',
-                        success: function(a){
-                            try{
-                                app.messenger.targets['parent'].send(JSON.stringify(a));
-                                if(a.success){
-                                    $.id('l_captcha_widget').className = 'verify-success';
-                                    $.id('l_captcha_text').innerHTML = '恭喜!验证成功';
-                                    return;
-                                } else if (a.error_codes.length > 0 && a.error_codes[0] == 'FALLBACK_VERIFY_FAILED') {
-                                    $.id('l_captcha_widget').className = 'verify-failed';
-                                    $.id('l_captcha_text').innerHTML = '验证失败!请重试';
-                                } else {
-                                    $.id('l_captcha_widget').className = 'verify';
-                                    $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
-                                }
-                            }catch(e){
-                                alert('xCAPTCHA 初始化未成功');
-                            }
-                        },
-                        error: function(a){console.log(a);}
-                    })
-                    delete(data);
-                    break;
-                }
+            var data = {
+                a: 9,
+                q: {{ $global_var }}[2],
+                p: app.enc(app.answer, app.answer).replace(/[\r\n]/g, ''),
+                m: app.enc(JSON.stringify(json.data), app.answer).replace(/[\r\n]/g, '')
+            };
+            if(json.type == 'VERIFY_FALLBACK'){
+                data['a'] = 4;
+                data['x'] = app.enc(JSON.stringify(app.fallback_answer), app.answer).replace(/[\r\n]/g, '')
             }
+            $.ajax({
+                url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
+                data: data,
+                type: 'POST',
+                dataType: 'json',
+                success: function(a){
+                    try{
+                        app.messenger.targets['parent'].send(JSON.stringify(a));
+                        $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
+                        if(a.success){
+                            $.id('l_captcha_widget').className = 'verify-success';
+                            $.id('l_captcha_text').innerHTML = '恭喜! 您已通过验证';
+                            return;
+                        } else if (a.error_codes.length > 0 && a.error_codes[0] == 'FALLBACK_VERIFY_FAILED') {
+                            if(a.error_codes.length > 1 && a.error_codes[1] == 'FALLBACK_REFRESH') {
+                                app.fallback_refresh(app);
+                            }
+                            $.id('l_captcha_widget').className = 'verify-failed';
+                            $.id('l_captcha_text').innerHTML = '验证失败!请重试';
+                            return;
+                        } else {
+                            $.id('l_captcha_widget').className = 'verify';
+                            $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                            return;
+                        }
+                    }catch(e){
+                        console.log(e);
+                        alert('xCAPTCHA 初始化未成功');
+                    }
+                },
+                error: function(a){console.log(a);}
+            });
+            delete(data);
         },
         fallback_init: function(app){
             // 在此处初始化 回落图形验证
@@ -121,35 +157,46 @@
                 app.messenger.targets['parent'].send(JSON.stringify({
                     success: false,
                     error_codes: ['OPEN_FALLBACK'],
-                    callback: 'fallback_ready'
+                    callback: 'fallback_ready',
+                    challenge: {
+                        p: {{ $global_var }},
+                        a: i
+                    }
                 }));
                 $.id('l_captcha_status').className += ' loading';
                 $.id('l_captcha_text').innerHTML = '加载中...';
             });
         },
+        fallback_refresh: function(app){
+            app.pow(app);
+        },
         fallback_ready: function(app){
             $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
             $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
         },
-        init: function(){
-            this.messenger = new Messenger('xcaptcha_frame', 'xCAPTCHA');
+        fallback_load: function(i){
+            app.messenger.targets['parent'].send(JSON.stringify({
+                success: false,
+                error_codes: ['UPGRADE_CHALLENGE'],
+                callback: '',
+                data: {
+                    challenge: {
+                        p: {{ $global_var }},
+                        a: i
+                    }
+                }
+            }));
 
+            app.fallback_init(app);
+        },
+        init: function(){
+            this._status_ok == 0;
+            this.messenger = new Messenger('xcaptcha_frame', 'xCAPTCHA');
             this.messenger.addTarget(window.parent, 'parent');
 
             app = this;
             (function(app){
-
-                if(1 == {{ $global_var }}[3]){
-                    app.challenge();
-                }  else {
-                    app.messenger.targets['parent'].send(JSON.stringify({
-                        success: false,
-                        error_codes: ['UPGRADE_CHALLENGE'],
-                        callback: ''
-                    }));
-                    app.fallback_init(app);
-                }
-
+                app.pow(app);
                 app.messenger.listen(function (msg) {
                     try{
                         var json = JSON.parse(msg);

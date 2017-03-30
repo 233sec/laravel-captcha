@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Response;
+use Image;
 
 /**
  * Class CaptchaController.
@@ -81,6 +82,45 @@ class CaptchaController extends Controller
     /**
      * @return \Illuminate\View\View
      */
+    public function fallimage(Request $request)
+    {
+        $appkey = $request->get('k', null);
+        if(!$appkey)
+            return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+        $p = $request->query('a');
+        $q = $request->query('q');
+        $q = json_decode(decrypt($q));
+
+        if(!$q[0] || !$q[1] || !$q[2] || !Redis::del('POW:'.$q[0].':'.$p))
+            return Response::json(['success' => false, 'error_codes' => ['INVALID_POW']]);
+
+        if($q[2] != $q[0] * $p)
+            return Response::json(['success' => false, 'error_codes' => ['INVALID_POW_ANSWER']]);
+
+        $x = mt_rand(10, 270);
+        $y = mt_rand(10, 130);
+
+        $ip = $request->ip();
+        $id = $request->session()->getId();
+
+        Redis::setex('FALLBACK:x:'.$ip.':'.$id, 900, $x);
+        Redis::setex('FALLBACK:y:'.$ip.':'.$id, 900, $y);
+
+        $image = new Image();
+        $img = Image::make(app_path().'/../resources/assets/image/captcha/bg/'.mt_rand(1,4).'.png');
+        $img->rectangle(0 + $x, 0 + $y, 19 + $x, 19 + $y, function ($draw) {
+            $draw->background(array(255, 255, 255, 0.6));
+        });
+        $img->rectangle(4 + $x, 4 + $y, 15 + $x, 15 + $y, function ($draw) {
+            $draw->background(array(mt_rand(0, 36), mt_rand(0, 36), mt_rand(0, 36), 0.6));
+        });
+        return $img->response('png');
+    }
+
+    /**
+     * @return \Illuminate\View\View
+     */
     public function pow(Request $request)
     {
         # POW算题
@@ -93,12 +133,14 @@ class CaptchaController extends Controller
         $ip = $request->ip();
         $id = $request->session()->getId();
 
+        Redis::del('FALLBACK:c:'.$ip.':'.$id, 1);
+
         $q1 = Redis::get('RATE:IP:'.$ip);
         $q2 = Redis::get('RATE:ID:'.$id);
         $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
 
-        $factor_one = (int)    substr(mt_rand(100000, 999999), 1);
-        $factor_two = (int)    substr(mt_rand(100000, 999999), 1);
+        $factor_one = (int)    substr(mt_rand(100, 9999999), 1);
+        $factor_two = (int)    substr(mt_rand(10000, 99999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
         $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5) ? 0 : 1; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
@@ -142,10 +184,37 @@ class CaptchaController extends Controller
 
         if($q1 > 30 || $q2 > 10 || $q3 > 5) # 回落验证
         {
-            if(0) # 失败
-                return Response::json(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED'], ]);
+            $p = $request->input('p');
+            $m = $request->input('m');
+            $q = $request->input('q');
+            $q = json_decode(decrypt($q));
+            $m = \GibberishAES\GibberishAES::dec($m, $q[1]);
+            $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
+
+            $ip = $request->ip();
+            $id = $request->session()->getId();
+            Redis::incr('FALLBACK:c:'.$ip.':'.$id);
+            $x = Redis::get('FALLBACK:x:'.$ip.':'.$id);
+            $y = Redis::get('FALLBACK:y:'.$ip.':'.$id);
+            $c = Redis::get('FALLBACK:c:'.$ip.':'.$id);
+
+            $data = json_decode($m, 1);
+
+            if(!isset($data['pos']) || !isset($data['pos']['x']) || !isset($data['pos']['y']))
+                return Response::json(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'BAD_PARAM', $data]]);
+
+            if(abs($data['pos']['x'] - $x) > 19 || abs($data['pos']['y'] - $y) > 19)
+            {
+                if($c >= 3)
+                {
+                    return Response::json(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'FALLBACK_REFRESH' ]]);
+                }
+                return Response::json(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED' ]]);
+            }
             else # 成功
+            {
                 $score += 10000;
+            }
         }
         else # 隐藏验证
         {

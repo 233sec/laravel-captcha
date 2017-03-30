@@ -193,16 +193,17 @@ g,b,a,d,e){return n(v(n(n(g,c),n(a,e)),d),b)}function h(c,g,b,a,d,e,f){return q(
 w?"0123456789ABCDEF":"0123456789abcdef",b="",a=0;a<4*c.length;a++)b+=g.charAt(c[a>>2]>>a%4*8+4&15)+g.charAt(c[a>>2]>>a%4*8&15);return b}var w=0,p=8,w=0,p=8;return x(y)};
 
 HTMLIFrameElement.prototype.remove = function(){
-    this.parentNode.removeChild(this);
+    try{
+        this.parentNode.removeChild(this);
+    }catch(e){}
 };
 
-$ = {
-    id: function(id){
-        try{
-            return document.getElementById(id);
-        }catch(e){
-            return window[id];
-        }
+if('undefined' == typeof $) $ = {};
+$.id = function(id){
+    try{
+        return document.getElementById(id);
+    }catch(e){
+        return window[id];
     }
 };
 @if (!1)

@@ -26,6 +26,26 @@ $.id('lc-image-panel').addEventListener('click', function(e){
         }
     }));
 });
+messenger.listen(function (msg) {
+    try{
+        var json = JSON.parse(msg);
+        if(json.success){
+            $.id('lc_success_overlay').style.display = 'block';
+            $.id('lc_fail_overlay').style.display = 'none';
+            setTimeout(function(){
+                messenger.targets['parent'].send(JSON.stringify({
+                    success: false,
+                    error_codes: ['CLOSE_FALLBACK'],
+                    type: 'FALLBACK',
+                }));
+            }, 1000);
+        }else{
+            $.id('lc_fail_overlay').style.display = 'block';
+            $.id('lc_success_overlay').style.display = 'none';
+        }
+    }catch(e){
+    }
+});
 @if (!1)
     </script>
 @endif

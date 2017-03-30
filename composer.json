@@ -17,6 +17,7 @@
         "dittertp/gibberish-aes-php": "^1.1",
         "donatj/phpuseragentparser": "*",
         "hieu-le/active": "~3.0",
+        "intervention/image": "^2.3",
         "laravel/framework": "5.4.*",
         "laravel/socialite": "^3.0",
         "laravel/tinker": "~1.0",
