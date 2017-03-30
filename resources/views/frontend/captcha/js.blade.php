@@ -5,6 +5,13 @@
 
 (function(a){
     var $ = {
+        id: function(id){
+            try{
+                return document.getElementById(id);
+            }catch(e){
+                return window[id];
+            }
+        },
         md5: md5,
         messenger: null,
         enc: function(t, k){
@@ -80,6 +87,17 @@
                         dataType: 'json',
                         success: function(a){
                             try{
+                                console.log(a);
+                                if(a.success){
+                                    $.id('l_captcha_widget').className = 'verify-success';
+                                    $.id('l_captcha_text').innerHTML = '验证成功!';
+                                } else if (a.error_codes.length > 0 && a.error_codes[0] == 'FALLBACK_VERIFY_FAILED') {
+                                    $.id('l_captcha_widget').className = 'verify-failed';
+                                    $.id('l_captcha_text').innerHTML = '验证失败!请重试';
+                                } else {
+                                    $.id('l_captcha_widget').className = 'verify';
+                                    $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                                }
                                 app.messenger.targets['parent'].send(JSON.stringify(a));
                             }catch(e){
                                 alert('xCAPTCHA 初始化未成功');
@@ -99,10 +117,16 @@
             app = this;
             (function(app){
 
-                if({{ $global_var }}[3]){
+                if(1 == {{ $global_var }}[3]){
                     setTimeout(function(){
                         app.challenge();
                     }, 1000);
+                }  else {
+                    app.messenger.targets['parent'].send(JSON.stringify({
+                        success: false,
+                        error_codes: ['UPGRADE_CHALLENGE'],
+                        callback: ''
+                    }));
                 }
 
                 app.messenger.listen(function (msg) {
@@ -116,6 +140,11 @@
                     console.log(msg);
                 });
 
+                app.messenger.targets['parent'].send(JSON.stringify({
+                    success: false,
+                    error_codes: ['READY','INVISIBLE'],
+                    callback: 'userverify'
+                }));
             })(app);
         },
         challenge: function(){

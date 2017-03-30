@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Response;
 
 /**
@@ -49,14 +50,32 @@ class CaptchaController extends Controller
      */
     public function anchor(Request $request)
     {
-        # 加载完成需加载POW算题
-        # 运算完POW算题
-
         $appkey = $request->get('k', null);
-
         if(!$appkey)
             return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
         return view('frontend.captcha.anchor');
+    }
+
+    /**
+     * @return \Illuminate\View\View
+     */
+    public function fall(Request $request)
+    {
+        $appkey = $request->get('k', null);
+        if(!$appkey)
+            return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+        return view('frontend.captcha.fall');
+    }
+
+    /**
+     * @return \Illuminate\View\View
+     */
+    public function fallback(Request $request)
+    {
+        $appkey = $request->get('k', null);
+        if(!$appkey)
+            return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+        return view('frontend.captcha.fallback');
     }
 
     /**
@@ -74,13 +93,14 @@ class CaptchaController extends Controller
         $factor_one = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_two = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
-        $factor_fou = (int)    1; # 是否invisible验证
+        $factor_fou = (int)    0; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
         $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax, $factor_fou]));
 
         $challenge  = (array)  [$factor_one, $factor_hax, $factor_cga, $factor_two, $factor_fou];
 
         # Cache set factor_one && factor_two
+        Redis::setex('POW:'.$factor_one.':'.$factor_two, 600, 1);
 
         return response()->view('frontend.captcha.pow', ['challenge' => $challenge, 'global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
     }
@@ -111,7 +131,7 @@ class CaptchaController extends Controller
         $q = json_decode(decrypt($q));
         $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
 
-        if(!$q[0] || !$q[1] || !$q[2])
+        if(!$q[0] || !$q[1] || !$q[2] || !Redis::del('POW:'.$q[0].':'.$p))
             return Response::json(['success' => false, 'error_codes' => ['INVALID_POW']]);
 
         if($q[2] != $q[0] * $p)

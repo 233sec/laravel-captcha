@@ -192,7 +192,9 @@ a=m(a,d,e,b,c[f+5],21,-57434055),b=m(b,a,d,e,c[f+12],6,1700485571),e=m(e,b,a,d,c
 g,b,a,d,e){return n(v(n(n(g,c),n(a,e)),d),b)}function h(c,g,b,a,d,e,f){return q(g&b|~g&a,c,g,d,e,f)}function k(c,g,b,a,d,e,f){return q(g&a|b&~a,c,g,d,e,f)}function l(c,g,b,a,d,e,f){return q(g^b^a,c,g,d,e,f)}function m(c,g,b,a,d,e,f){return q(b^(g|~a),c,g,d,e,f)}function n(c,g){var b=(c&65535)+(g&65535);return(c>>16)+(g>>16)+(b>>16)<<16|b&65535}function v(c,g){return c<<g|c>>>32-g}function u(c){for(var g=[],b=(1<<p)-1,a=0;a<c.length*p;a+=p)g[a>>5]|=(c.charCodeAt(a/p)&b)<<a%32;return g}function r(c){for(var g=
 w?"0123456789ABCDEF":"0123456789abcdef",b="",a=0;a<4*c.length;a++)b+=g.charAt(c[a>>2]>>a%4*8+4&15)+g.charAt(c[a>>2]>>a%4*8&15);return b}var w=0,p=8,w=0,p=8;return x(y)};
 
-
+HTMLIFrameElement.prototype.remove = function(){
+    this.parentNode.removeChild(this);
+};
 @if (!1)
     </script>
 @endif
