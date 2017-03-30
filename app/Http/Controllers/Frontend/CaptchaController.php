@@ -214,6 +214,9 @@ class CaptchaController extends Controller
             else # 成功
             {
                 $score += 10000;
+                Redis::set('RATE:IP:'.$ip, 1);
+                Redis::set('RATE:ID:'.$id, 1);
+                Redis::set('RATE:IPID:'.$ip.':'.$id, 1);
             }
         }
         else # 隐藏验证
