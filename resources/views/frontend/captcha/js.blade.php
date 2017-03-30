@@ -75,22 +75,28 @@
         },
         userverify: function(json, app){
             for(i = 0; i < 100000; i++){
+                var data = {
+                    a: 9,
+                    q: {{ $global_var }}[2],
+                    p: app.enc(i, i).replace(/[\r\n]/g, ''),
+                    m: app.enc(JSON.stringify(json.data), i).replace(/[\r\n]/g, '')
+                };
+                if(json.type == 'VERIFY_FALLBACK'){
+                    data['a'] = 4;
+                }
                 if($.md5((i * {{ $global_var }}[0]).toString()) == {{ $global_var }}[1]){
                     $.ajax({
                         url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
-                        data: {
-                            q: {{ $global_var }}[2],
-                            p: app.enc(i, i).replace(/[\r\n]/g, ''),
-                            m: app.enc(JSON.stringify(json.data), i).replace(/[\r\n]/g, '')
-                        },
+                        data: data,
                         type: 'POST',
                         dataType: 'json',
                         success: function(a){
                             try{
-                                console.log(a);
+                                app.messenger.targets['parent'].send(JSON.stringify(a));
                                 if(a.success){
                                     $.id('l_captcha_widget').className = 'verify-success';
-                                    $.id('l_captcha_text').innerHTML = '验证成功!';
+                                    $.id('l_captcha_text').innerHTML = '恭喜!验证成功';
+                                    return;
                                 } else if (a.error_codes.length > 0 && a.error_codes[0] == 'FALLBACK_VERIFY_FAILED') {
                                     $.id('l_captcha_widget').className = 'verify-failed';
                                     $.id('l_captcha_text').innerHTML = '验证失败!请重试';
@@ -98,16 +104,32 @@
                                     $.id('l_captcha_widget').className = 'verify';
                                     $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
                                 }
-                                app.messenger.targets['parent'].send(JSON.stringify(a));
                             }catch(e){
                                 alert('xCAPTCHA 初始化未成功');
                             }
                         },
                         error: function(a){console.log(a);}
                     })
+                    delete(data);
                     break;
                 }
             }
+        },
+        fallback_init: function(app){
+            // 在此处初始化 回落图形验证
+            $.id('l_captcha_widget').addEventListener('click', function(e){
+                app.messenger.targets['parent'].send(JSON.stringify({
+                    success: false,
+                    error_codes: ['OPEN_FALLBACK'],
+                    callback: 'fallback_ready'
+                }));
+                $.id('l_captcha_status').className += ' loading';
+                $.id('l_captcha_text').innerHTML = '加载中...';
+            });
+        },
+        fallback_ready: function(app){
+            $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
+            $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
         },
         init: function(){
             this.messenger = new Messenger('xcaptcha_frame', 'xCAPTCHA');
@@ -118,25 +140,25 @@
             (function(app){
 
                 if(1 == {{ $global_var }}[3]){
-                    setTimeout(function(){
-                        app.challenge();
-                    }, 1000);
+                    app.challenge();
                 }  else {
                     app.messenger.targets['parent'].send(JSON.stringify({
                         success: false,
                         error_codes: ['UPGRADE_CHALLENGE'],
                         callback: ''
                     }));
+                    app.fallback_init(app);
                 }
 
                 app.messenger.listen(function (msg) {
                     try{
                         var json = JSON.parse(msg);
+
                         if('string' == typeof json.callback && 'function' == typeof app[json.callback]){
                             app[json.callback](json, app);
                         }
                     }catch(e){}
-                        console.log('MSG REV:');
+                    console.log('MSG REV:');
                     console.log(msg);
                 });
 

@@ -64,4 +64,5 @@
         <div class="lc-status-word"><span class="word-text" id="lc-captcha-word">请点击上方图片中 <i>方块</i></span></div>
     </div>
 </div>
+<script src="{{ route('frontend.captcha.falljs') }}"></script>
 </body></html>

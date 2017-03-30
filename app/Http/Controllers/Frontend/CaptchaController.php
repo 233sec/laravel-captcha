@@ -90,10 +90,17 @@ class CaptchaController extends Controller
         if(!$appkey)
             return Response::jsonp('console.error', json_encode([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'] ]));
 
+        $ip = $request->ip();
+        $id = $request->session()->getId();
+
+        $q1 = Redis::get('RATE:IP:'.$ip);
+        $q2 = Redis::get('RATE:ID:'.$id);
+        $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
+
         $factor_one = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_two = (int)    substr(mt_rand(100000, 999999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
-        $factor_fou = (int)    0; # 是否invisible验证
+        $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5) ? 0 : 1; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
         $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax, $factor_fou]));
 
@@ -126,91 +133,108 @@ class CaptchaController extends Controller
         if(!$appkey)
             return Response::json(['success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-        $p = $request->input('p');
-        $q = $request->input('q');
-        $q = json_decode(decrypt($q));
-        $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
+        $ip = $request->ip();
+        $id = $request->session()->getId();
 
-        if(!$q[0] || !$q[1] || !$q[2] || !Redis::del('POW:'.$q[0].':'.$p))
-            return Response::json(['success' => false, 'error_codes' => ['INVALID_POW']]);
+        $q1 = Redis::get('RATE:IP:'.$ip);
+        $q2 = Redis::get('RATE:ID:'.$id);
+        $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
 
-        if($q[2] != $q[0] * $p)
-            return Response::json(['success' => false, 'error_codes' => ['INVALID_POW_ANSWER']]);
-
-        # Cache del factor_one && factor_two
-
-        $ua = $request->server('HTTP_USER_AGENT');
-        $ua = parse_user_agent($ua);
-
-        # 如果是正常的浏览器
-        # 
-        # 加20分
-
-        if(in_array($ua['platform'], ['iOS', 'Android', 'Macintosh', 'Linux', 'Windows', 'NT', 'Windows NT']) && in_array($ua['browser'], ['Chrome', 'Safari', 'IE', 'ie', 'Sogou', 'SogouExplorer', '360', '360 Browser']) && 
-            isset($ua['version']) )
+        if($q1 > 30 || $q2 > 10 || $q3 > 5) # 回落验证
         {
-            $score += 20;
+            if(0) # 失败
+                return Response::json(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED'], ]);
+            else # 成功
+                $score += 10000;
         }
+        else # 隐藏验证
+        {
+            $p = $request->input('p');
+            $q = $request->input('q');
+            $q = json_decode(decrypt($q));
+            $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
 
-        # IP 如果在5分钟内验证次数在5次以内
-        # 加20分
-        # 
-        # IP 如果非IDC机房IP
-        # 加10分
-        #
-        # IP 如果百度能定位到
-        # 加10分
-        #
-        # SESS_ID 如果在5分钟内验证次数在5分钟内
-        # 加10分
-        if(1)
-        {
-            $score += 20;
-        }
-        if(1)
-        {
-            $score += 10;
-        }
-        if(1)
-        {
-            $score += 10;
-        }
-        if(1)
-        {
-            $score += 10;
-        }
+            if(!$q[0] || !$q[1] || !$q[2] || !Redis::del('POW:'.$q[0].':'.$p))
+                return Response::json(['success' => false, 'error_codes' => ['INVALID_POW']]);
 
-        # 如果是桌面
-        if(!in_array($ua['platform'], ['iOS', 'Android']))
-        {
-            # 鼠标移动轨迹
-            if(1) # 如果轨迹合理
+            if($q[2] != $q[0] * $p)
+                return Response::json(['success' => false, 'error_codes' => ['INVALID_POW_ANSWER']]);
+
+            # Cache del factor_one && factor_two
+
+            $ua = $request->server('HTTP_USER_AGENT');
+            $ua = parse_user_agent($ua);
+
+            # 如果是正常的浏览器
+            # 
+            # 加20分
+
+            if(in_array($ua['platform'], ['iOS', 'Android', 'Macintosh', 'Linux', 'Windows', 'NT', 'Windows NT']) && in_array($ua['browser'], ['Chrome', 'Safari', 'IE', 'ie', 'Sogou', 'SogouExplorer', '360', '360 Browser']) && 
+                isset($ua['version']) )
             {
-                if(2) # 如果没有重复
-                {
-                    $score += 20;
-                }
+                $score += 20;
+            }
+
+            # IP 如果在5分钟内验证次数在5次以内
+            # 加20分
+            # 
+            # IP 如果非IDC机房IP
+            # 加10分
+            #
+            # IP 如果百度能定位到
+            # 加10分
+            #
+            # SESS_ID 如果在5分钟内验证次数在5分钟内
+            # 加10分
+            if(1)
+            {
+                $score += 20;
+            }
+            if(1)
+            {
                 $score += 10;
             }
-        }
-        # 如果是手机
-        else
-        {
-            $score += 10;
-        }
+            if(1)
+            {
+                $score += 10;
+            }
+            if(1)
+            {
+                $score += 10;
+            }
 
-        #请求顺序
-        if('anchor')
-        {
-            $score += 5;
-        }
-        if('pow')
-        {
-            $score += 15;
-        }
-        if('userverify')
-        {
-            $score += 15;
+            # 如果是桌面
+            if(!in_array($ua['platform'], ['iOS', 'Android']))
+            {
+                # 鼠标移动轨迹
+                if(1) # 如果轨迹合理
+                {
+                    if(2) # 如果没有重复
+                    {
+                        $score += 20;
+                    }
+                    $score += 10;
+                }
+            }
+            # 如果是手机
+            else
+            {
+                $score += 10;
+            }
+
+            #请求顺序
+            if('anchor')
+            {
+                $score += 5;
+            }
+            if('pow')
+            {
+                $score += 15;
+            }
+            if('userverify')
+            {
+                $score += 15;
+            }
         }
 
         $challenge_response = gmdate('YmdHis') . substr(mt_rand(100000000, 999999999), 1);
@@ -250,6 +274,13 @@ class CaptchaController extends Controller
                 'response' => 'required|min:40|max:256',
                 'remoteip' => 'nullable|ip'
             ]);
+
+            $ip = $request->ip();
+            $id = $request->session()->getId();
+
+            Redis::incr('RATE:IP:'.$ip);           Redis::expire('RATE:IP:'.$ip, 600);
+            Redis::incr('RATE:ID:'.$id);           Redis::expire('RATE:ID:'.$id, 600);
+            Redis::incr('RATE:IPID:'.$ip.':'.$id); Redis::expire('RATE:IPID:'.$ip.':'.$id, 600);
 
             # 验证appkey 和 appsecret
             # 验证response
@@ -299,8 +330,8 @@ class CaptchaController extends Controller
     /**
      * @return \Illuminate\View\View
      */
-    public function messageJs()
+    public function falljs()
     {
-        return response()->view('frontend.captcha.message', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
+        return response()->view('frontend.captcha.falljs')->withHeaders(['Content-Type' => 'application/x-javascript']);
     }
 }

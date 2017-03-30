@@ -195,6 +195,16 @@ w?"0123456789ABCDEF":"0123456789abcdef",b="",a=0;a<4*c.length;a++)b+=g.charAt(c[
 HTMLIFrameElement.prototype.remove = function(){
     this.parentNode.removeChild(this);
 };
+
+$ = {
+    id: function(id){
+        try{
+            return document.getElementById(id);
+        }catch(e){
+            return window[id];
+        }
+    }
+};
 @if (!1)
     </script>
 @endif
