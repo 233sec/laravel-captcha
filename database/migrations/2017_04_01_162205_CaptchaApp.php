@@ -18,6 +18,7 @@ class CaptchaApp extends Migration
             $table->string('name');
             $table->string('key');
             $table->string('secret');
+            $table->string('theme');
             $table->boolean('active')->default(true);
             $table->timestamps();
 

@@ -162,6 +162,7 @@
         fallback_init: function(app){
             // 在此处初始化 回落图形验证
             $.id('l_captcha_widget').addEventListener('click', function(e){
+                if($.id('l_captcha_widget').className.indexOf('-success') > -1) return;
                 app.messenger.targets['parent'].send(JSON.stringify({
                     success: false,
                     error_codes: ['OPEN_FALLBACK'],
@@ -218,8 +219,7 @@
 
                 app.messenger.targets['parent'].send(JSON.stringify({
                     success: false,
-                    error_codes: ['READY','INVISIBLE'],
-                    callback: 'userverify'
+                    error_codes: ['READY','FALLBACK']
                 }));
             })(app);
         },

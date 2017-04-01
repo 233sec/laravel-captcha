@@ -13,7 +13,7 @@
             <label> 手机号 </label> <input class="form-control" type="number" name="tel">
         </div>
         <div class="form-group">
-            <div id="recaptcha-demo" class="g-recaptcha" data-sitekey="6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs" data-auto-callback="onAuto" data-usercheck-callback="showCaptcha" data-callback="onSuccess" data-bind="recaptcha-demo-submit"></div>
+            <div id="recaptcha-demo" class="g-recaptcha" data-sitekey="6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs" data-auto-callback="onAuto" data-usercheck-callback="showCaptcha" data-callback="onSuccess" data-needcheck-callback="showCaptcha" data-bind="recaptcha-demo-submit"></div>
         </div>
         <button class="btn btn-success" id="recaptcha-demo-submit" type="submit">提交</button>
     </form>
@@ -27,14 +27,14 @@ var onSuccess=function(a){
     console.log(a);
 };
 var onAuto=function(a){
-    $.id('recaptcha-demo').style.display='none';
+    $('#recaptcha-demo').hide();
     return onSuccess();
 };
 
-$.id('recaptcha-demo').style.display='none';
+$('#recaptcha-demo').hide();
 
 var showCaptcha=function(a){
-    $.id('recaptcha-demo').style.display='block';
+    $('#recaptcha-demo').show();
 };
 </script>
 @endsection

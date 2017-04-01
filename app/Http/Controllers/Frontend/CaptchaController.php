@@ -67,11 +67,10 @@ class CaptchaController extends Controller
             Redis::set('APP:KEY:'.$appkey, json_encode($app));
         }
 
-        $theme = Redis::get('THEME:KEY:'.$appkey);
-        if(!$theme)
-            $theme = 'default';
+        if(!$app->theme)
+            $app->theme = 'default';
 
-        return view('frontend.captcha.anchor', ['theme' => $theme]);
+        return view('frontend.captcha.anchor', ['theme' => $app->theme]);
     }
 
     /**
@@ -367,13 +366,13 @@ class CaptchaController extends Controller
 
             Redis::set('CHALLENGE:RESPONSE:'.$challenge_response, 1);
 
-            Redis::expire('CHALLENGE:RESPONSE:'.$challenge_response, 600);
+            Redis::expire('CHALLENGE:RESPONSE:'.$challenge_response, 900);
 
             Redis::set('IP:RESPONSE:'.$challenge_response, $ip);
             Redis::set('ID:RESPONSE:'.$challenge_response, $id);
 
-            Redis::expire('IP:RESPONSE:'.$challenge_response, 600);
-            Redis::expire('ID:RESPONSE:'.$challenge_response, 600);
+            Redis::expire('IP:RESPONSE:'.$challenge_response, 900);
+            Redis::expire('ID:RESPONSE:'.$challenge_response, 900);
 
             Redis::incr('NOT:IP:'.$ip);
             Redis::incr('NOT:ID:'.$id);
@@ -443,8 +442,8 @@ class CaptchaController extends Controller
             $response = decrypt($response);
 
             $do = Redis::get('CHALLENGE:RESPONSE:'.$response);
-            $ip = Redis::del('IP:RESPONSE:'.$response);
-            $id = Redis::del('ID:RESPONSE:'.$response);
+            $ip = Redis::get('IP:RESPONSE:'.$response);
+            $id = Redis::get('ID:RESPONSE:'.$response);
 
             Redis::incr('RATE:IP:'.$ip);           Redis::expire('RATE:IP:'.$ip, 600);
             Redis::incr('RATE:ID:'.$id);           Redis::expire('RATE:ID:'.$id, 600);

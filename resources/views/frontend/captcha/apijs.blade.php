@@ -24,7 +24,7 @@
         });
 
         var _g_captcha_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-callback');
-        var _g_captcha_uc_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-usercheck-callback');
+        var _g_captcha_uc_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-needcheck-callback');
         var _g_button = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-bind');
         // xCAPTCHA loading end
 
@@ -47,7 +47,7 @@
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'INVISIBLE'){
                 try{ document.getElementById('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'FALLBACK'){
-                try{ document.getElementById('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
+                try{ document.getElementById('xcaptcha_frame').style.display = 'block'; _g_captcha_uc_callback(json); }catch(e){ xcaptcha_frame.style.display = 'block'; }
             }else if(json.success == false && json.error_codes[0] == 'CLOSE_FALLBACK'){
                 try{
                     $.id('xcaptcha_frame_fallback').style.display = 'none';
