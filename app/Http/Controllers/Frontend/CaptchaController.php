@@ -57,7 +57,7 @@ class CaptchaController extends Controller
         if(!$appkey)
             return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-        $app = json_decode(Redis::get('APP:KEY:'.$appkey), 1);
+        $app = json_decode(Redis::get('APP:KEY:'.$appkey));
         if(!$app)
         {
             $app = DB::table('app')->where(['key' => $appkey])->first();
@@ -266,6 +266,8 @@ class CaptchaController extends Controller
                     Redis::set('RATE:IP:'.$ip, 1);
                     Redis::set('RATE:ID:'.$id, 1);
                     Redis::set('RATE:IPID:'.$ip.':'.$id, 1);
+
+                    $type = 'FALLBACK';
                 }
             }
             else # 隐藏验证
@@ -358,6 +360,7 @@ class CaptchaController extends Controller
                 {
                     $score += 15;
                 }
+                $type = 'INVISIBLE';
             }
 
             $challenge_response = gmdate('YmdHis') . substr(mt_rand(100000000, 999999999), 1);
@@ -384,7 +387,7 @@ class CaptchaController extends Controller
                 'success' => true,
                 'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
                 'hostname' => 'www.baidu.com',
-                'error_codes' => [],
+                'error_codes' => [$type],
                 'response' => encrypt($challenge_response)
             ]), 1);
         }catch(\Exception $e){
@@ -425,6 +428,17 @@ class CaptchaController extends Controller
             # 验证response
             # 验证response 和 appkey
             # 验证response 和 remoteip
+            $app = json_decode(Redis::get('APP:KEY:'.$appkey));
+            if(!$app)
+            {
+                $app = DB::table('app')->where(['key' => $appkey])->first();
+                if(!$app)
+                    return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+                Redis::set('APP:KEY:'.$appkey, json_encode($app));
+            }
+            if($app->secret != $appsecret)
+                return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPSECRET'], ]);
 
             $response = decrypt($response);
 

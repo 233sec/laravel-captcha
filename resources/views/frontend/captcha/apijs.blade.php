@@ -24,6 +24,8 @@
         });
 
         var _g_captcha_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-callback');
+        var _g_captcha_uc_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-usercheck-callback');
+        var _g_button = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-bind');
         // xCAPTCHA loading end
 
         messenger.listen(function (msg) {
@@ -33,6 +35,14 @@
                 window['g-recaptcha-response'].value = json.response;
                 if('undefined' !== typeof messenger.targets['xcaptcha_frame_fall']){
                     messenger.targets['xcaptcha_frame_fall'].send(JSON.stringify(json));
+                }
+                if('function' == typeof window[_g_captcha_callback]) window[_g_captcha_callback](json);
+                if(json.error_codes[0] == 'INVISIBLE'){
+                    try{
+                        if($.id(_g_button).className.indexOf('binded') == -1) return;
+                        $.id(_g_button).removeAttribute('onclick');
+                        $.id(_g_button).click();
+                    }catch(e){}
                 }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'INVISIBLE'){
                 try{ document.getElementById('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
@@ -105,17 +115,30 @@
                     callback: json.callback
                 }));
             }else if(json.success == false && json.error_codes[0] == 'UPGRADE_CHALLENGE'){
-                // try{ document.getElementById('xcaptcha_frame').src='{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey')); }catch(e){ xcaptcha_frame.src='{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey')); }
+                if('undefined' !== typeof _g_captcha_uc_callback)
+                    if('undefined' !== typeof window[_g_captcha_uc_callback])
+                        window[_g_captcha_uc_callback](json);
             }else if(json.success == false && json.error_codes[0] == 'POST_MOUSE'){
-                messenger.targets['xcaptcha_frame'].send(JSON.stringify({
-                    action: 'POST_MOUSE',
-                    data: window._p,
-                    callback: json.callback
-                }));
+                // 给提交按钮绑定事件
+                if('undefined' !== typeof _g_button)
+                    try{
+                        if($.id(_g_button).className.indexOf('binded') > -1) return;
+                        $.id(_g_button).addEventListener('mousedown', function(event){
+                            messenger.targets['xcaptcha_frame'].send(JSON.stringify({
+                                action: 'POST_MOUSE',
+                                data: window._p,
+                                callback: 'userverify'
+                            }));
+                            event.stopPropagation();
+                            event.preventDefault();
+                            return !1;
+                        });
+                        $.id(_g_button).setAttribute('onclick', 'return false');
+                        $.id(_g_button).className = $.id(_g_button).className + ' binded';
+                    }catch(e){}
             }else if(json.success == false && json.error_codes[0] == 'FALLBACK_VERIFY_FAILED'){
                 messenger.targets['xcaptcha_frame_fall'].send(JSON.stringify(json));
             }
-            if('function' == typeof window[_g_captcha_callback]) window[_g_captcha_callback](json);
             return;
         });
     }catch(e){

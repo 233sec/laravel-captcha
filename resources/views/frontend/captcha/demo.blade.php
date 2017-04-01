@@ -1,38 +1,40 @@
-<!DOCTYPE HTML>
-<html dir="ltr">
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width,user-scalable=yes">
-<title>ReCAPTCHA 演示</title>
-</head>
-<body>
-<div class="sample-form">
+@extends('frontend.layouts.app')
+
+@section('content')
+<style>
+*, .btn, .form-control{
+    border-radius: 0!important;
+}
+</style>
+
+<div class="col-md-offset-4 col-md-4">
 	<form id="recaptcha-demo-form" method="POST">
-			<legend>具有 ReCAPTCHA 保护功能的示例表单</legend>
-				<label for="input1">名字</label><input class="jfk-textinput" id="input1" name="input1" type="text" value="Jane">
-				<label for="input2">姓氏</label><input class="jfk-textinput" id="input2" name="input2" type="text" value="Smith">
-				<label for="input3">电子邮件</label><input class="jfk-textinput" id="input3" name="input3" type="text" value="stopallbots@gmail.com">
-				
-				<p>
-					选择您喜爱的颜色：
-				</p>
-				<label class="jfk-radiobutton-label" for="option1"><input class="jfk-radiobutton-checked" type="radio" id="option1" name="radios" value="option1" checked aria-checked="true">红色</label><label class="jfk-radiobutton-label" for="option2"><input class="jfk-radiobutton" type="radio" id="option2" name="radios" value="option2" disabled aria-disabled="true">绿色</label>
-				
-				<div class="">
-					<div id="recaptcha-demo" class="g-recaptcha" data-sitekey="6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs" data-callback="onSuccess" data-bind="recaptcha-demo-submit">
-					</div>
-				</div>
-				
-				<button id="recaptcha-demo-submit" type="submit" disabled>提交</button>
-	</form>
+        <div class="form-group">
+            <label> 手机号 </label> <input class="form-control" type="number" name="tel">
+        </div>
+        <div class="form-group">
+            <div id="recaptcha-demo" class="g-recaptcha" data-sitekey="6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs" data-auto-callback="onAuto" data-usercheck-callback="showCaptcha" data-callback="onSuccess" data-bind="recaptcha-demo-submit"></div>
+        </div>
+        <button class="btn btn-success" id="recaptcha-demo-submit" type="submit">提交</button>
+    </form>
 </div>
+@endsection
+
+@section('after-scripts')
 <script src="{{ route('frontend.captcha.loader') }}"></script>
 <script>
 var onSuccess=function(a){
-    if(a.success == true)
-        window['recaptcha-demo-submit'].removeAttribute('disabled');
+    console.log(a);
+};
+var onAuto=function(a){
+    $.id('recaptcha-demo').style.display='none';
+    return onSuccess();
+};
+
+$.id('recaptcha-demo').style.display='none';
+
+var showCaptcha=function(a){
+    $.id('recaptcha-demo').style.display='block';
 };
 </script>
-</body>
-</html>
+@endsection
