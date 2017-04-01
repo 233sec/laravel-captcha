@@ -42,6 +42,10 @@ messenger.listen(function (msg) {
         }else{
             $.id('lc_fail_overlay').style.display = 'block';
             $.id('lc_success_overlay').style.display = 'none';
+            try{clearTimeout(window._lo);}catch(e){}
+            window._lo = setTimeout(function(){
+                $.id('lc_fail_overlay').style.display = 'none';
+            }, 1000);
         }
     }catch(e){
     }

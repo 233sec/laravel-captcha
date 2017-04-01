@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>LUOTEST</title>
-    <link type="text/css" rel="stylesheet" href="//s-captcha.luosimao.com/static/dist/captcha_frame.css?v=201610101436.css">
+    <link type="text/css" rel="stylesheet" href="{{ route('frontend.captcha.fallback.css') }}">
 </head>
 <body>
 <div class="lc-panel">

@@ -54,7 +54,6 @@
                         }else if('string' == typeof a.dataType && a.dataType.toLowerCase() == 'script'){
                             eval(xmlhttp.responseText);
                         }else{
-                            console.log(a);
                             a.success(xmlhttp.responseText, xmlhttp.status, xmlhttp);
                         }
                     } else if(xmlhttp.status != 0) {
@@ -71,11 +70,14 @@
                 s = s.substr(0, s.length-1);
                 a.data = s;
             }
-            xmlhttp.send(a.data);
+
+            setTimeout(function(){
+                xmlhttp.send(a.data);
+            }, 1);
         },
         _tx: null,
         pow: function(app){
-            delete({{ $global_var }});
+            delete(window[window.__recaptcha_tk]);
 
             (function(i,s,o,g,r,a,m){i['gxp']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -83,20 +85,18 @@
             })(window,document,'script','{{ route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) }}'.replace(/9999/g, function(){return (new Date).getTime();}),'xa');
 
             app._tx = setInterval(function(){
-                if('undefined' == typeof {{ $global_var }}) return;
+                if('undefined' == typeof window[window.__recaptcha_tk]) return;
                 clearInterval(app._tx);
-                if(1 == {{ $global_var }}[3]){
+                if(1 == window[window.__recaptcha_tk][3]){
                     app.challenge();
-                    app.userverify({data:{}, answer:{}}, app);
                 }  else {
                     $.id('l_captcha_widget').className = 'verify';
                     $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
                     app.fallback_load();
                 }
                 for(i = 0; i < 100000000; i++){
-                    if($.md5((i * {{ $global_var }}[0]).toString()) == {{ $global_var }}[1]){
+                    if($.md5((i * window[window.__recaptcha_tk][0]).toString()) == window[window.__recaptcha_tk][1]){
                         app.answer = i;
-                        console.log(i);
                         break;
                     }
                 }
@@ -109,7 +109,7 @@
         userverify: function(json, app){
             var data = {
                 a: 9,
-                q: {{ $global_var }}[2],
+                q: app.enc(window[window.__recaptcha_tk][2], window.__recaptcha_tk).replace(/[\r\n]/g, ''),
                 p: app.enc(app.answer, app.answer).replace(/[\r\n]/g, ''),
                 m: app.enc(JSON.stringify(json.data), app.answer).replace(/[\r\n]/g, '')
             };
@@ -121,9 +121,10 @@
                 url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
                 data: data,
                 type: 'POST',
-                dataType: 'json',
+                dataType: 'text',
                 success: function(a){
                     try{
+                        a = JSON.parse(app.dec(a, app.answer)); 
                         app.messenger.targets['parent'].send(JSON.stringify(a));
                         $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                         if(a.success){
@@ -136,6 +137,11 @@
                             }
                             $.id('l_captcha_widget').className = 'verify-failed';
                             $.id('l_captcha_text').innerHTML = '验证失败!请重试';
+                            try{clearTimeout(window._lo);}catch(e){}
+                            window._lo = setTimeout(function(){
+                                $.id('l_captcha_widget').className = 'verify';
+                                $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                            }, 1000);
                             return;
                         } else {
                             $.id('l_captcha_widget').className = 'verify';
@@ -143,7 +149,6 @@
                             return;
                         }
                     }catch(e){
-                        console.log(e);
                         alert('xCAPTCHA 初始化未成功');
                     }
                 },
@@ -159,7 +164,7 @@
                     error_codes: ['OPEN_FALLBACK'],
                     callback: 'fallback_ready',
                     challenge: {
-                        p: {{ $global_var }},
+                        p: window[window.__recaptcha_tk],
                         a: i
                     }
                 }));
@@ -181,7 +186,7 @@
                 callback: '',
                 data: {
                     challenge: {
-                        p: {{ $global_var }},
+                        p: window[window.__recaptcha_tk],
                         a: i
                     }
                 }
@@ -205,8 +210,6 @@
                             app[json.callback](json, app);
                         }
                     }catch(e){}
-                    console.log('MSG REV:');
-                    console.log(msg);
                 });
 
                 app.messenger.targets['parent'].send(JSON.stringify({

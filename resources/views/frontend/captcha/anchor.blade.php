@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="verify" id="l_captcha_widget">
-    <div class="captcha-widget-menu theme-default">
+    <div class="captcha-widget-menu theme-{{ $theme }}">
         <span class="captcha-widget-copyright">
             <a href="javascript:" id="l_captcha_link" title="xCAPTCHA"><i class="copyright-icon"></i></a>
         </span>
