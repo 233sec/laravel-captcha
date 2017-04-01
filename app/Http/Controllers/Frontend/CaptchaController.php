@@ -120,6 +120,7 @@ class CaptchaController extends Controller
 
         Redis::setex('FALLBACK:x:'.$ip.':'.$id, 900, $x);
         Redis::setex('FALLBACK:y:'.$ip.':'.$id, 900, $y);
+        Redis::setex('Q2:'.$q[2].':'.$q[0], 86400, 1);
 
         $img = Image::make(app_path().'/../resources/assets/image/captcha/bg/'.mt_rand(1,4).'.png');
 
@@ -234,7 +235,7 @@ class CaptchaController extends Controller
                 $data = json_decode($m, 1);
 
                 if(!isset($data['pos']) || !isset($data['pos']['x']) || !isset($data['pos']['y']))
-                    throw new \Exception(json_encode(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'BAD_PARAM', $data]]), 1);
+                    throw new \Exception(json_encode(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'BAD_PARAM']]), 1);
 
                 if(abs($data['pos']['x'] - $x) > 19 || abs($data['pos']['y'] - $y) > 19)
                 {
@@ -243,6 +244,10 @@ class CaptchaController extends Controller
                         throw new \Exception(json_encode(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'FALLBACK_REFRESH' ]]), 1);
                     }
                     throw new \Exception(json_encode(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED' ]]), 1);
+                }
+                else if(!Redis::del('Q2:'.$q[2].':'.$q[0]))
+                {
+                    throw new \Exception(json_encode(['success' => false, 'error_codes' => ['FALLBACK_VERIFY_FAILED', 'BAD_POW']]), 1);
                 }
                 else # 成功
                 {
