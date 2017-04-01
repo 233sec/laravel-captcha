@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Response;
 use Image;
+use DB;
 
 /**
  * Class CaptchaController.
@@ -55,6 +56,16 @@ class CaptchaController extends Controller
         $appkey = $request->get('k', null);
         if(!$appkey)
             return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+        $app = json_decode(Redis::get('APP:KEY:'.$appkey), 1);
+        if(!$app)
+        {
+            $app = DB::table('app')->where(['key' => $appkey])->first();
+            if(!$app)
+                return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+            Redis::set('APP:KEY:'.$appkey, json_encode($app));
+        }
 
         $theme = Redis::get('THEME:KEY:'.$appkey);
         if(!$theme)

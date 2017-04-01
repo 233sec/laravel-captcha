@@ -128,6 +128,7 @@
                         a = JSON.parse(app.dec(a, app.answer)); 
                         app.messenger.targets['parent'].send(JSON.stringify(a));
                         if(a.success){
+                            $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                             $.id('l_captcha_widget').className = 'verify-success';
                             $.id('l_captcha_text').innerHTML = '恭喜! 您已通过验证';
                             return;
