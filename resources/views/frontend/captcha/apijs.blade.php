@@ -67,8 +67,12 @@
                     ifrm.setAttribute("style", "z-index: 2000000001; position: relative; width: 300px; height: 190px; background: rgb(255, 255, 255);display: block; border: 1px solid rgb(204, 204, 204); border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 3px; position: absolute; z-index: 2000000000; visibility: visible;");
 
                     var pos = $.id('xcaptcha_frame').getBoundingClientRect();
+                    var width = pos.width;
                     var top = pos.top - 200 + window.scrollY;
                     var left = pos.left + window.scrollX;
+                    if(width > 300)
+                        left += (width - 300)/2;
+
 
                     ifrm.style.left = left + 'px';
                     ifrm.style.top = top + 'px';

@@ -90,6 +90,7 @@
                 if(1 == window[window.__recaptcha_tk][3]){
                     app.challenge();
                 }  else {
+                    $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                     $.id('l_captcha_widget').className = 'verify';
                     $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
                     app.fallback_load();
@@ -126,7 +127,6 @@
                     try{
                         a = JSON.parse(app.dec(a, app.answer)); 
                         app.messenger.targets['parent'].send(JSON.stringify(a));
-                        $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                         if(a.success){
                             $.id('l_captcha_widget').className = 'verify-success';
                             $.id('l_captcha_text').innerHTML = '恭喜! 您已通过验证';
@@ -139,11 +139,13 @@
                             $.id('l_captcha_text').innerHTML = '验证失败!请重试';
                             try{clearTimeout(window._lo);}catch(e){}
                             window._lo = setTimeout(function(){
+                                $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                                 $.id('l_captcha_widget').className = 'verify';
                                 $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
                             }, 1000);
                             return;
                         } else {
+                            $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                             $.id('l_captcha_widget').className = 'verify';
                             $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
                             return;
@@ -177,6 +179,7 @@
         },
         fallback_ready: function(app){
             $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
+            $.id('l_captcha_widget').className = 'verify';
             $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
         },
         fallback_load: function(i){

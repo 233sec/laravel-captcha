@@ -122,11 +122,14 @@ class CaptchaController extends Controller
 
         $img = Image::make(app_path().'/../resources/assets/image/captcha/bg/'.mt_rand(1,4).'.png');
 
-        $img->circle(21, 9 + $x, 9 + $y, function ($draw) {
-            $draw->background(array(250, 250, 250, 0.5));
+        $img->circle(25, 9 + $x, 9 + $y, function ($draw) {
+            $draw->background(array(200, 200, 200, 0.33));
         });
-        $img->rectangle(4 + $x, 4 + $y, 15 + $x, 15 + $y, function ($draw) {
-            $draw->background(array(mt_rand(0, 36), mt_rand(0, 36), mt_rand(0, 36), 0.6));
+        $img->circle(23, 9 + $x, 9 + $y, function ($draw) {
+            $draw->background(array(150, 150, 150, 0.2));
+        });
+        $img->rectangle(4 + $x, 4 + $y, 14 + $x, 14 + $y, function ($draw) {
+            $draw->background(array(255, 255, 255));
         });
 
         return $img->response('png');
