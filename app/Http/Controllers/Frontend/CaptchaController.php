@@ -41,7 +41,8 @@ class CaptchaController extends Controller
     public function demo(Request $request)
     {
         if($request->method() == 'POST'){
-            return dump($request->input());
+            $response = $request->input('g-recaptcha-response');
+            return response()->redirectToRoute('frontend.captcha.siteverify', ['k' => "6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs", 'secret' => "6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs", 'response' => $response]);
         }
         return view('frontend.captcha.demo');
     }
@@ -345,6 +346,16 @@ class CaptchaController extends Controller
 
             $challenge_response = gmdate('YmdHis') . substr(mt_rand(100000000, 999999999), 1);
 
+            Redis::set('CHALLENGE:RESPONSE:'.$challenge_response, 1);
+
+            Redis::expire('CHALLENGE:RESPONSE:'.$challenge_response, 600);
+
+            Redis::set('IP:RESPONSE:'.$challenge_response, $ip);
+            Redis::set('ID:RESPONSE:'.$challenge_response, $id);
+
+            Redis::expire('IP:RESPONSE:'.$challenge_response, 600);
+            Redis::expire('ID:RESPONSE:'.$challenge_response, 600);
+
             Redis::incr('NOT:IP:'.$ip);
             Redis::incr('NOT:ID:'.$id);
             Redis::incr('NOT:IPID:'.$ip.':'.$id);
@@ -361,6 +372,7 @@ class CaptchaController extends Controller
                 'response' => encrypt($challenge_response)
             ]), 1);
         }catch(\Exception $e){
+            // return response()->make($e->getMessage().$e->getLine())->withHeaders(['Content-Type' => 'text/plain']);
             return response()->make(\GibberishAES\GibberishAES::enc($e->getMessage(), $q[1]))->withHeaders(['Content-Type' => 'text/plain']);
         }
     }
@@ -393,8 +405,16 @@ class CaptchaController extends Controller
                 'remoteip' => 'nullable|ip'
             ]);
 
-            $ip = $request->ip();
-            $id = $request->session()->getId();
+            # 验证appkey 和 appsecret
+            # 验证response
+            # 验证response 和 appkey
+            # 验证response 和 remoteip
+
+            $response = decrypt($response);
+
+            $do = Redis::get('CHALLENGE:RESPONSE:'.$response);
+            $ip = Redis::del('IP:RESPONSE:'.$response);
+            $id = Redis::del('ID:RESPONSE:'.$response);
 
             Redis::incr('RATE:IP:'.$ip);           Redis::expire('RATE:IP:'.$ip, 600);
             Redis::incr('RATE:ID:'.$id);           Redis::expire('RATE:ID:'.$id, 600);
@@ -404,10 +424,22 @@ class CaptchaController extends Controller
             Redis::decr('NOT:ID:'.$id);
             Redis::decr('NOT:IPID:'.$ip.':'.$id);
 
-            # 验证appkey 和 appsecret
-            # 验证response
-            # 验证response 和 appkey
-            # 验证response 和 remoteip
+            if(!$do)
+                return Response::json([
+                    'success' => false,
+                    'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
+                    'error_codes' => ['INVALID_CHALLENGE_RESPONSE'] 
+                ]);
+            if($remoteip && $ip != $remoteip)
+                return Response::json([
+                    'success' => false,
+                    'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
+                    'error_codes' => ['INVALID_CHALLENGE_IP'] 
+                ]);
+
+            Redis::del('CHALLENGE:RESPONSE:'.$response);
+            Redis::del('IP:RESPONSE:'.$response);
+            Redis::del('ID:RESPONSE:'.$response);
 
             return Response::json([
                 'success' => true,
