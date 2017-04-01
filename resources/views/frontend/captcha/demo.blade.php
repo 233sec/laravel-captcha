@@ -5,7 +5,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,user-scalable=yes">
 <title>ReCAPTCHA 演示</title>
-<link rel="stylesheet" href="https://www.gstatic.cn/recaptcha/api2/r20170315121834/demo__ltr.css" type="text/css">
 </head>
 <body>
 <div class="sample-form">

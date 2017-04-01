@@ -206,6 +206,7 @@ $.id = function(id){
         return window[id];
     }
 };
+
 @if (!1)
     </script>
 @endif

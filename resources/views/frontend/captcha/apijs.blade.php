@@ -13,7 +13,7 @@
         document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<iframe id="xcaptcha_frame" style="display:block;border: 0px;width: 100%;height: 44px;" src="{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}">'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey'));
 
         window.messenger = new Messenger('parent', 'xCAPTCHA');
-        window.messenger.addTarget(xcaptcha_frame.contentWindow, 'xcaptcha_frame');
+        window.messenger.addTarget($.id('xcaptcha_frame').contentWindow, 'xcaptcha_frame');
 
         document.addEventListener('mousemove', function(e){
             if(window._p_l > (new Date).getTime()) return;
@@ -69,6 +69,9 @@
                     var pos = $.id('xcaptcha_frame').getBoundingClientRect();
                     var width = pos.width;
                     var top = pos.top - 200 + window.scrollY;
+                    if(top < 170)
+                        top = pos.top + pos.height + 8;
+
                     var left = pos.left + window.scrollX;
                     if(width > 300)
                         left += (width - 300)/2;
@@ -116,7 +119,7 @@
             return;
         });
     }catch(e){
-
+        console.log(e);
     }
 
 })(window);
