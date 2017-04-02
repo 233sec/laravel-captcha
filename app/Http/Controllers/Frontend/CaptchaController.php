@@ -178,7 +178,7 @@ class CaptchaController extends Controller
         $factor_one = (int)    substr(mt_rand(100, 9999999), 1);
         $factor_two = (int)    substr(mt_rand(10000, 99999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
-        $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3) ? 0 : 1; # 是否invisible验证
+        $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 >= 5 || $x2 >= 4 || $x3 >= 3) ? 0 : 1; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
         $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax, $factor_fou]));
 

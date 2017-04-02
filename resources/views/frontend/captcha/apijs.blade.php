@@ -10,7 +10,7 @@
         window._p = []; window._p_l = 0;
         document.getElementsByClassName('g-recaptcha')[0].innerHTML = '';
         document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<input type="hidden" name="g-recaptcha-response" value="" id="g-recaptcha-response">';
-        document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<iframe id="xcaptcha_frame" style="display:block;border: 0px;width: 100%;height: 44px;" src="{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}">'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey'));
+        document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<iframe id="xcaptcha_frame" style="display:none;border: 0px;width: 100%;height: 44px;" src="{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}">'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey'));
 
         window.messenger = new Messenger('parent', 'xCAPTCHA');
         window.messenger.addTarget($.id('xcaptcha_frame').contentWindow, 'xcaptcha_frame');
@@ -45,9 +45,9 @@
                     }catch(e){}
                 }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'INVISIBLE'){
-                try{ document.getElementById('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
+                try{ $.id('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'FALLBACK'){
-                try{ document.getElementById('xcaptcha_frame').style.display = 'block'; _g_captcha_uc_callback(json); }catch(e){ xcaptcha_frame.style.display = 'block'; }
+                try{ $.id('xcaptcha_frame').style.display = 'block'; _g_captcha_uc_callback(json); }catch(e){ xcaptcha_frame.style.display = 'block'; }
             }else if(json.success == false && json.error_codes[0] == 'CLOSE_FALLBACK'){
                 try{
                     $.id('xcaptcha_frame_fallback').style.display = 'none';

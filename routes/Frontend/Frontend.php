@@ -20,6 +20,8 @@ Route::group(['middleware' => 'auth'], function () {
          */
         Route::get('dashboard', 'DashboardController@index')->name('dashboard');
 
+        Route::get('my/app', 'MyAppController@index')->name('my.app');
+
         /*
          * User Account Specific
          */
