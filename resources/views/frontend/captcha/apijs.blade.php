@@ -115,6 +115,9 @@
                     callback: json.callback
                 }));
             }else if(json.success == false && json.error_codes[0] == 'UPGRADE_CHALLENGE'){
+                if($.id('xcaptcha_frame_fallback') != null)
+                    $.id('xcaptcha_frame_fallback').src = '{!! route("frontend.captcha.fallback", ["k"=>9999, "q"=>9998, "a"=>9997]) !!}'.replace(/9999/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey')).replace(/9998/, json.data.challenge.p[2]).replace(/9997/, json.data.challenge.a)
+
                 if('undefined' !== typeof _g_captcha_uc_callback)
                     if('undefined' !== typeof window[_g_captcha_uc_callback])
                         window[_g_captcha_uc_callback](json);
@@ -137,10 +140,22 @@
                         $.id(_g_button).className = $.id(_g_button).className + ' binded';
                     }catch(e){}
             }else if(json.success == false && json.error_codes[0] == 'FALLBACK_VERIFY_FAILED'){
+                if('undefined' == typeof messenger.targets['xcaptcha_frame_fall'])
+                    messenger.targets['parent'].send(JSON.stringify({
+                        error_codes: ['OPEN_FALLBACK'],
+                    }));
                 messenger.targets['xcaptcha_frame_fall'].send(JSON.stringify(json));
             }
             return;
         });
+
+        window.xCAPTCHA = {
+            reset: function(){
+                messenger.targets['xcaptcha_frame'].send(JSON.stringify({
+                    callback: 'init'
+                }));
+            }
+        };
     }catch(e){
         console.log(e);
     }

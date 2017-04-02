@@ -43,7 +43,7 @@ class CaptchaController extends Controller
     {
         if($request->method() == 'POST'){
             $response = $request->input('g-recaptcha-response');
-            return response()->redirectToRoute('frontend.captcha.siteverify', ['k' => "6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs", 'secret' => "6LfP0CITAAAAAHq9FOgCo7v_fb0-pmmH9VW3ziFs", 'response' => $response]);
+            return response()->redirectToRoute('frontend.captcha.siteverify', ['k' => getenv('XCAPTCHA_KEY'), 'secret' => getenv('XCAPTCHA_SECRET'), 'response' => $response]);
         }
         return view('frontend.captcha.demo');
     }

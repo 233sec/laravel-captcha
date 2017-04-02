@@ -4,6 +4,11 @@
 
 @section('after-styles')
     {{ Html::style("css/backend/plugin/datatables/dataTables.bootstrap.min.css") }}
+<style>
+.text-monospace {
+    font-family: monospace;
+}
+</style>
 @endsection
 
 @section('content')
@@ -50,10 +55,10 @@
                     data: {status: false, trashed: true}
                 },
                 columns: [
-                    {data: 'name', name: 'app.name'},
-                    {data: 'key', name: 'app.key'},
-                    {data: 'secret', name: 'app.secret'},
-                    {data: function(a){return '';}, name: 'actions', searchable: false, sortable: false}
+                    {data: 'name', name: 'app.name', searchable: false, sortable: false, class: 'text-monospace'},
+                    {data: 'key', name: 'app.key', searchable: false, sortable: false, class: 'text-monospace'},
+                    {data: 'secret', name: 'app.secret', searchable: false, sortable: false, class: 'text-monospace'},
+                    {data: function(a){return '';}, name: 'actions', searchable: false, sortable: false, class: 'text-monospace'}
                 ],
                 order: [[0, "asc"]],
                 searchDelay: 500

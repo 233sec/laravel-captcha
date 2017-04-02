@@ -82,22 +82,26 @@
             (function(i,s,o,g,r,a,m){i['gxp']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
                 m=s.getElementsByTagName(o)[0];a.async=1;a.className='xtv';a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','{{ route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) }}'.replace(/9999/g, function(){return (new Date).getTime();}),'xa');
+            })(window,document,'script','{!! route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) !!}'.replace(/9999/g, function(){return (new Date).getTime();}),'xa');
 
+            app = this;
             app._tx = setInterval(function(){
                 if('undefined' == typeof window[window.__recaptcha_tk]) return;
                 clearInterval(app._tx);
-                if(1 == window[window.__recaptcha_tk][3]){
-                    app.challenge();
-                }  else {
-                    $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
-                    $.id('l_captcha_widget').className = 'verify';
-                    $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
-                    app.fallback_load();
-                }
                 for(i = 0; i < 100000000; i++){
                     if($.md5((i * window[window.__recaptcha_tk][0]).toString()) == window[window.__recaptcha_tk][1]){
                         app.answer = i;
+                        if(1 == window[window.__recaptcha_tk][3]){
+                            app.challenge();
+                            $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
+                            $.id('l_captcha_widget').className = 'verify-success';
+                            $.id('l_captcha_text').innerHTML = '恭喜! 您已通过验证';
+                        }  else {
+                            $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
+                            $.id('l_captcha_widget').className = 'verify';
+                            $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                            app.fallback_load(app);
+                        }
                         break;
                     }
                 }
@@ -118,6 +122,7 @@
                 data['a'] = 4;
                 data['x'] = app.enc(JSON.stringify(app.fallback_answer), app.answer).replace(/[\r\n]/g, '')
             }
+            app = this;
             $.ajax({
                 url: '{{ route("frontend.captcha.userverify", \Request::all()) }}',
                 data: data,
@@ -143,6 +148,9 @@
                                 $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                                 $.id('l_captcha_widget').className = 'verify';
                                 $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
+                                if(app.fallback_c_status != 1){
+                                    app.fallback_init();
+                                }
                             }, 1000);
                             return;
                         } else {
@@ -161,6 +169,8 @@
         },
         fallback_init: function(app){
             // 在此处初始化 回落图形验证
+            app = this;
+
             $.id('l_captcha_widget').addEventListener('click', function(e){
                 if($.id('l_captcha_widget').className.indexOf('-success') > -1) return;
                 app.messenger.targets['parent'].send(JSON.stringify({
@@ -169,7 +179,7 @@
                     callback: 'fallback_ready',
                     challenge: {
                         p: window[window.__recaptcha_tk],
-                        a: i
+                        a: app.answer
                     }
                 }));
                 $.id('l_captcha_status').className += ' loading';
@@ -177,14 +187,16 @@
             });
         },
         fallback_refresh: function(app){
-            app.pow(app);
+            app.pow(this);
         },
+        fallback_c_status: 0,
         fallback_ready: function(app){
+            app.fallback_c_status = 1;
             $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
             $.id('l_captcha_widget').className = 'verify';
             $.id('l_captcha_text').innerHTML = '点击此处进行人机识别验证';
         },
-        fallback_load: function(i){
+        fallback_load: function(app){
             app.messenger.targets['parent'].send(JSON.stringify({
                 success: false,
                 error_codes: ['UPGRADE_CHALLENGE'],
@@ -192,12 +204,12 @@
                 data: {
                     challenge: {
                         p: window[window.__recaptcha_tk],
-                        a: i
+                        a: app.answer
                     }
                 }
             }));
 
-            app.fallback_init(app);
+            app.fallback_init(this);
         },
         init: function(){
             this._status_ok == 0;
@@ -221,7 +233,7 @@
                     success: false,
                     error_codes: ['READY','FALLBACK']
                 }));
-            })(app);
+            })(this);
         },
         challenge: function(){
             this.messenger.targets['parent'].send(JSON.stringify({

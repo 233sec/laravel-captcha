@@ -21,6 +21,7 @@ class MyAppController extends Controller
                 ->join('app', 'app.id', '=', 'user_app.app_id')
                 ->select(['user_app.*', 'app.name', 'app.key', 'app.secret', 'app.theme'])
                 ->where(['user_app.user_id' => auth()->id()])
+                ->orderBy('user_app.id', 'asc')
             )->make(true);
         }
 
