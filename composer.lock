@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "43b7fe74e45bd4fe97cc395fba59c819",
-    "content-hash": "0667ca2f546657dd661df2110bd2aafd",
+    "hash": "f1eb41f03a1fd2f1077cb0c9ed90640a",
+    "content-hash": "df57b06b863f3533a24fcb59797f6f43",
     "packages": [
         {
             "name": "arcanedev/log-viewer",
@@ -2742,6 +2742,41 @@
             "time": "2016-09-20 12:50:39"
         },
         {
+            "name": "tsssec/laravel-editable",
+            "version": "dev-next",
+            "source": {
+                "type": "git",
+                "url": "https://code.aliyun.com/233sec/laravel-editable.git",
+                "reference": "56cc90fd0f348640d08c9eecea026a5a9fdbf121"
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "arcanedev/laravel-html": "~5.0",
+                "phpunit/phpcov": "~2.0|~3.0",
+                "phpunit/phpunit": "~4.0|~5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Tsssec\\Editable\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tsssec\\Editable\\Tests\\": "tests/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "xiaohui.lam"
+                }
+            ],
+            "time": "2017-03-07 19:02:04"
+        },
+        {
             "name": "vlucas/phpdotenv",
             "version": "v2.4.0",
             "source": {
@@ -4546,7 +4581,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "tsssec/laravel-editable": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

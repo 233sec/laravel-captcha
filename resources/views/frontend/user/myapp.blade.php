@@ -7,24 +7,32 @@
 @endsection
 
 @section('content')
-    <div class="box box-success">
-        <div class="box-header with-border">
-            <h3 class="box-title">我的应用</h3>
-        </div><!-- /.box-header -->
-
-        <div class="box-body">
-            <div class="table-responsive">
-                <table id="users-table" class="table table-condensed table-hover">
-                    <thead>
-                        <tr>
-                            <th>APP_ID</th>
-                            <th>{{ trans('labels.general.actions') }}</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div><!--table-responsive-->
-        </div><!-- /.box-body -->
-    </div><!--box-->
+<div class="col-xs-12">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">我的应用</div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table id="users-table" class="table table-condensed table-hover">
+                        <thead>
+                            <tr>
+                                <th>NAME</th>
+                                <th>APPKEY</th>
+                                <th>APPSECRET</th>
+                                <th>{{ trans('labels.general.actions') }}</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <a class="btn btn-primary btn-sm no-corner" href="{{ route('frontend.user.my.app.create') }}">添加</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('after-scripts')
@@ -42,52 +50,15 @@
                     data: {status: false, trashed: true}
                 },
                 columns: [
-                    {data: 'app_id', name: 'app_id'},
-                    {data: 'actions', name: 'actions', searchable: false, sortable: false}
+                    {data: 'name', name: 'app.name'},
+                    {data: 'key', name: 'app.key'},
+                    {data: 'secret', name: 'app.secret'},
+                    {data: function(a){return '';}, name: 'actions', searchable: false, sortable: false}
                 ],
                 order: [[0, "asc"]],
                 searchDelay: 500
             });
 
-            $("body").on("click", "a[name='delete_user_perm']", function(e) {
-                e.preventDefault();
-                var linkURL = $(this).attr("href");
-
-                swal({
-                    title: "{{ trans('strings.backend.general.are_you_sure') }}",
-                    text: "{{ trans('strings.backend.access.users.delete_user_confirm') }}",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "{{ trans('strings.backend.general.continue') }}",
-                    cancelButtonText: "{{ trans('buttons.general.cancel') }}",
-                    closeOnConfirm: false
-                }, function(isConfirmed){
-                    if (isConfirmed){
-                        window.location.href = linkURL;
-                    }
-                });
-            });
-
-            $("body").on("click", "a[name='restore_user']", function(e) {
-                e.preventDefault();
-                var linkURL = $(this).attr("href");
-
-                swal({
-                    title: "{{ trans('strings.backend.general.are_you_sure') }}",
-                    text: "{{ trans('strings.backend.access.users.restore_user_confirm') }}",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "{{ trans('strings.backend.general.continue') }}",
-                    cancelButtonText: "{{ trans('buttons.general.cancel') }}",
-                    closeOnConfirm: false
-                }, function(isConfirmed){
-                    if (isConfirmed){
-                        window.location.href = linkURL;
-                    }
-                });
-            });
 		});
 	</script>
 @endsection
