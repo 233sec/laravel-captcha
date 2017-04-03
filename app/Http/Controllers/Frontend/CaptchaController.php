@@ -222,8 +222,10 @@ class CaptchaController extends Controller
             $x1 = Redis::get('NOT:IP:'.$ip);
             $x2 = Redis::get('NOT:ID:'.$id);
             $x3 = Redis::get('NOT:IPID:'.$ip.':'.$id);
+            $x4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
+            $x5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
 
-            if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3) # 回落验证
+            if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3 || $x4 > 20 || $x5 > 10) # 回落验证
             {
                 $q = $request->input('q');
                 $q = \GibberishAES\GibberishAES::dec($q, $this->g);
@@ -444,6 +446,17 @@ class CaptchaController extends Controller
             $do = Redis::get('CHALLENGE:RESPONSE:'.$response);
             $ip = Redis::get('IP:RESPONSE:'.$response);
             $id = Redis::get('ID:RESPONSE:'.$response);
+
+            if(Redis::setnx('HAS:IP:APPKEY:'.$ip.':'.$appkey, 1)){
+                Redis::incr('COUNT:IP:'.$ip);
+                Redis::expire('HAS:IP:APPKEY:'.$ip.':'.$appkey, 86400);
+                Redis::expire('COUNT:IP:'.$ip, 86400);
+            }
+            if(Redis::setnx('HAS:ID:APPKEY:'.$id.':'.$appkey, 1)){
+                Redis::incr('COUNT:ID:'.$id);
+                Redis::expire('HAS:ID:APPKEY:'.$id.':'.$appkey, 86400);
+                Redis::expire('COUNT:ID:'.$id, 86400);
+            }
 
             Redis::incr('RATE:IP:'.$ip);           Redis::expire('RATE:IP:'.$ip, 600);
             Redis::incr('RATE:ID:'.$id);           Redis::expire('RATE:ID:'.$id, 600);
