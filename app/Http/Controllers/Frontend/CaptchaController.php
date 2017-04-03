@@ -100,7 +100,7 @@ class CaptchaController extends Controller
      */
     public function fallbackCss(Request $request)
     {
-        return response()->view('frontend.captcha.frame_css')->withHeaders(['Content-Type' => 'text/css']);
+        return response()->view('frontend.captcha.frame_css')->withHeaders(['Content-Type' => 'text/css', 'Cache-Control' => 'max-age=86400']);
     }
 
     /**
@@ -187,7 +187,7 @@ class CaptchaController extends Controller
         # Cache set factor_one && factor_two
         Redis::setex('POW:'.$factor_one.':'.$factor_two, 600, 1);
 
-        return response()->view('frontend.captcha.pow', ['challenge' => $challenge, 'global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
+        return response()->view('frontend.captcha.pow', ['challenge' => $challenge, 'global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript', 'Cache-Control' => 'max-age=86400']);
     }
 
     /**
@@ -504,7 +504,7 @@ class CaptchaController extends Controller
      */
     public function css()
     {
-        return response()->view('frontend.captcha.css', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'text/css']);
+        return response()->view('frontend.captcha.css', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'text/css', 'Cache-Control' => 'max-age=86400']);
     }
 
     /**
@@ -512,7 +512,7 @@ class CaptchaController extends Controller
      */
     public function apiJs()
     {
-        return response()->view('frontend.captcha.apijs', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
+        return response()->view('frontend.captcha.apijs', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript', 'Cache-Control' => 'max-age=86400']);
     }
 
     /**
@@ -520,7 +520,7 @@ class CaptchaController extends Controller
      */
     public function js()
     {
-        return response()->view('frontend.captcha.js', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript']);
+        return response()->view('frontend.captcha.js', ['global_var' => $this->g])->withHeaders(['Content-Type' => 'application/x-javascript', 'Cache-Control' => 'max-age=86400']);
     }
 
     /**
@@ -528,6 +528,6 @@ class CaptchaController extends Controller
      */
     public function falljs()
     {
-        return response()->view('frontend.captcha.falljs')->withHeaders(['Content-Type' => 'application/x-javascript']);
+        return response()->view('frontend.captcha.falljs')->withHeaders(['Content-Type' => 'application/x-javascript', 'Cache-Control' => 'max-age=86400']);
     }
 }
