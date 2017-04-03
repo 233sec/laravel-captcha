@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f1eb41f03a1fd2f1077cb0c9ed90640a",
-    "content-hash": "df57b06b863f3533a24fcb59797f6f43",
+    "hash": "465371553e5364d9393bd23590f164ca",
+    "content-hash": "9209b0826bcf82ba1948205ea4f67324",
     "packages": [
         {
             "name": "arcanedev/log-viewer",
@@ -892,6 +892,45 @@
                 }
             ],
             "time": "2015-04-20 18:58:01"
+        },
+        {
+            "name": "jingling0101/laravel-qcloud-cos",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/YueCode/laravel-qcloud-cos.git",
+                "reference": "caf2b02ba1968b049ecc29468bd49e3f03a19fba"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/YueCode/laravel-qcloud-cos/caf2b02ba1968b049ecc29468bd49e3f03a19fba.zip",
+                "reference": "caf2b02ba1968b049ecc29468bd49e3f03a19fba",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "YueCode\\Cos\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "jingling0101",
+                    "email": "admin@nmfox.com"
+                }
+            ],
+            "description": "qclouds api",
+            "keywords": [
+                "cos",
+                "laravel",
+                "laravel-qcloud",
+                "laravel-qcloud-cos",
+                "qcloud",
+                "qcloud-cos",
+                "tengxun"
+            ],
+            "time": "2017-03-03 06:58:26"
         },
         {
             "name": "laravel/framework",
