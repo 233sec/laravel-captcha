@@ -28,9 +28,28 @@ class MyAppController extends Controller
         return response()->view('frontend.user.myapp');
     }
 
-    public function detail($id)
+    public function detail(Request $request, int $id)
     {
-
+        $detail = new Editable();
+        return $detail->options([
+            'instance' => 'app',
+            'primary_key' => 'id',
+            'i18n' => [
+                'lengend_1'     => '漏洞审核',
+                'id'            => 'ID',
+                'status'        => '状态',
+                'created_at'    => '创建时间',
+                'updated_at'    => '修改时间',
+                'deleted_at'    => '删除时间',
+            ],
+            'edit' => true
+        ])
+        ->queryBuilder(
+            DB::table('app')
+            ->where([ 'id' => $id ])
+        )->ready(function($detail) use($id){
+            return view('frontend.user.myapp_detail', ['detail' => $detail, 'id' => $id]);
+        });
     }
 
     public function create()
