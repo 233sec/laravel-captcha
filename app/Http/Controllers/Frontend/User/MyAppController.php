@@ -19,7 +19,7 @@ class MyAppController extends Controller
             return Datatables::queryBuilder(
                 DB::table('user_app')
                 ->join('app', 'app.id', '=', 'user_app.app_id')
-                ->select(['user_app.*', 'app.name', 'app.key', 'app.secret', 'app.theme'])
+                ->select(['user_app.*', 'app.name', 'app.key', 'app.secret', 'app.theme', 'app.domain'])
                 ->where(['user_app.user_id' => auth()->id()])
                 ->orderBy('user_app.id', 'asc')
             )->make(true);

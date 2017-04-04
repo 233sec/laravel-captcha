@@ -22,6 +22,7 @@
                         <thead>
                             <tr>
                                 <th>NAME</th>
+                                <th>DOMAIN</th>
                                 <th>APPKEY</th>
                                 <th>APPSECRET</th>
                                 <th>{{ trans('labels.general.actions') }}</th>
@@ -56,9 +57,25 @@
                 },
                 columns: [
                     {data: 'name', name: 'app.name', searchable: false, sortable: false, class: 'text-monospace'},
+                    {data: 'domain', name: 'app.domain', searchable: false, sortable: false, class: 'text-monospace'},
                     {data: 'key', name: 'app.key', searchable: false, sortable: false, class: 'text-monospace'},
                     {data: 'secret', name: 'app.secret', searchable: false, sortable: false, class: 'text-monospace'},
-                    {data: function(a){return '';}, name: 'actions', searchable: false, sortable: false, class: 'text-monospace'}
+                    {data: function(raw){return [
+                        (function(raw){
+                            a = $('<a></a>');
+                            a.attr('class', 'btn btn-primary btn-xs');
+                            a.attr('href', "{{ route('frontend.user.my.app.detail', ['id' => 9999]) }}".replace(/9999/g, raw.id));
+                            a.text('设置');
+                            return a[0].outerHTML;
+                        })(raw),
+                        ' ',
+                        (function(){
+                            a = $('<a></a>');
+                            a.attr('class', 'btn btn-warning btn-xs');
+                            a.text('统计');
+                            return a[0].outerHTML;
+                        })()
+                    ].join('');}, name: 'actions', searchable: false, sortable: false, class: 'text-monospace'}
                 ],
                 order: [[0, "asc"]],
                 searchDelay: 500

@@ -67,6 +67,12 @@ class CaptchaController extends Controller
             Redis::set('APP:KEY:'.$appkey, json_encode($app));
         }
 
+        $domain = preg_split('/[:\/]/', $request->server('HTTP_REFERER'), 8)[3] ?? '';
+        if($app->domain != $domain && !preg_match('/'.$app->domain.'/', $request->server('HTTP_REFERER')))
+        {
+            return Response::json([ 'success' => false, 'error_codes' => ['INVALID_DOMAIN'], ]);
+        }
+
         if(!$app->theme)
             $app->theme = 'default';
 
@@ -132,7 +138,7 @@ class CaptchaController extends Controller
         Redis::setex('FALLBACK:y:'.$ip.':'.$id, 900, $y);
         Redis::setex('Q2:'.$q[2].':'.$q[0], 86400, 1);
 
-        $img = Image::make(app_path().'/../resources/assets/image/captcha/bg/'.mt_rand(1,4).'.png');
+        $img = Image::make(app_path().'/../resources/assets/image/captcha/bg/'.mt_rand(1,45).'.png');
 
         $img->circle(25, 9 + $x, 9 + $y, function ($draw) {
             $draw->background(array(200, 200, 200, 0.33));
