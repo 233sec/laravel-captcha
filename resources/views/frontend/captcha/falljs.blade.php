@@ -12,7 +12,7 @@ messenger.targets['parent'].send(JSON.stringify({
     callback: ''
 }));
 
-$.id('lc-image-panel').addEventListener('click', function(e){
+$.id('lc_captcha_list').addEventListener('click', function(e){
     messenger.targets['parent'].send(JSON.stringify({
         success: false,
         error_codes: ['VERIFY_FALLBACK'],

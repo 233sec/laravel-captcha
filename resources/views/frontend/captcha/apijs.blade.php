@@ -27,6 +27,25 @@
         var _g_captcha_uc_callback = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-needcheck-callback');
         var _g_button = document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-bind');
         // xCAPTCHA loading end
+        
+        window.onresize = function(){
+            var pos = $.id('xcaptcha_frame').getBoundingClientRect();
+            var width = pos.width;
+            var top = pos.top - 200 + window.scrollY;
+            if(top < 170)
+                top = pos.top + pos.height + 8;
+
+            var left = pos.left + window.scrollX;
+            if(width > 300)
+                left += (width - 300)/2;
+
+            $.id('xcaptcha_frame_fallback').style.left = left + 'px';
+            $.id('xcaptcha_frame_fallback').style.top = top + 'px';
+
+            delete(pos);
+            delete(top);
+            delete(left);
+        };
 
         messenger.listen(function (msg) {
             json = JSON.parse(msg);
@@ -75,32 +94,16 @@
                     ifrm.setAttribute("id", "xcaptcha_frame_fallback");
                     ifrm.setAttribute("src", "{!! route('frontend.captcha.fallback', ["k" => "_3_3_4_5_", "q" => 9999, "a" => 9998]) !!}".replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey')).replace(/9999/g, json.challenge.p[2]).replace(/9998/g, json.challenge.a));
                     ifrm.setAttribute("style", "z-index: 2000000001; position: relative; width: 300px; height: 190px; background: rgb(255, 255, 255);display: block; border: 1px solid rgb(204, 204, 204); border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 3px; position: absolute; z-index: 2000000000; visibility: visible;");
-
-                    var pos = $.id('xcaptcha_frame').getBoundingClientRect();
-                    var width = pos.width;
-                    var top = pos.top - 200 + window.scrollY;
-                    if(top < 170)
-                        top = pos.top + pos.height + 8;
-
-                    var left = pos.left + window.scrollX;
-                    if(width > 300)
-                        left += (width - 300)/2;
-
-
-                    ifrm.style.left = left + 'px';
-                    ifrm.style.top = top + 'px';
-
-                    delete(pos);
-                    delete(top);
-                    delete(left);
-
                     document.body.appendChild(ifrm);
+
                     window.__l_c = json.callback;
                     window.messenger.addTarget(ifrm.contentWindow, 'xcaptcha_frame_fall');
 
                     $.id('xcaptcha_frame_fallback').style.display = 'block';
                     $.id('xcaptcha_frame_overlay').style.display = 'block';
                 }
+
+                window.onresize();
 
             }else if(json.success == false && json.error_codes[0] == 'READY_FALLBACK'){
                 messenger.targets['xcaptcha_frame'].send(JSON.stringify({

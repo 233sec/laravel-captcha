@@ -28,15 +28,14 @@ class MyAppController extends Controller
         return response()->view('frontend.user.myapp');
     }
 
-    public function detail(Request $request, int $id)
+    public function detail(Request $request, $key)
     {
         $detail = new Editable();
         return $detail->options([
             'instance' => 'app',
-            'primary_key' => 'id',
+            'primary_key' => 'key',
             'i18n' => [
                 'lengend_1'     => '应用详情',
-                'id'            => 'ID',
                 'name'          => '应用名称',
                 'key'           => 'APPKEY',
                 'secret'        => 'APPSECRET',
@@ -50,18 +49,17 @@ class MyAppController extends Controller
         ->queryBuilder(
             DB::table('app')
             ->join('user_app', 'user_app.app_id', '=', 'app.id', 'inner')
-            ->where([ 'app.id' => $id ])
+            ->where([ 'app.key' => $key ])
             ->where(['user_app.user_id' => auth()->id()])
             ->select(['app.*'])
-        )->onsubmit(function($update){
-            Redis::set('APP:KEY:'.$update['key'], json_encode($update));
-            unset($update['key']);
+        )->onsubmit(function($update) use($key){
+            Redis::set('APP:KEY:'.$key, json_encode($update));
             unset($update['secret']);
             unset($update['created_at']);
             unset($update['updated_at']);
             return $update;
-        })->ready(function($detail) use($id){
-            return view('frontend.user.myapp_detail', ['detail' => $detail, 'id' => $id]);
+        })->ready(function($detail) use($key){
+            return view('frontend.user.myapp_detail', ['detail' => $detail, 'key' => $key]);
         });
     }
 

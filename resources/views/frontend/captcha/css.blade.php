@@ -123,7 +123,7 @@ body,html {
     background-position: -78px 0
 }
 
-@media  only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
+@media    only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
     #l_captcha_widget.verify-failed .status-icon,#l_captcha_widget.verify-success .status-icon {
         background-image:url(/img/captcha/widget_2x_combine.png);
         background-size: 101px 46px
@@ -184,7 +184,7 @@ body,html {
     background-position: 0 -23px;
 }
 
-@media  only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
+@media    only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
     #l_captcha_widget .theme-default .loading .status-icon,
     .theme-default .captcha-widget-copyright .copyright-icon,.theme-default .status-icon {
         background-image:url(/img/captcha/widget_2x_combine.png);
@@ -225,7 +225,7 @@ body,html {
     background-position: -23px -23px
 }
 
-@media  only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
+@media    only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
     #l_captcha_widget .theme-dark .loading .status-icon,.theme-dark .captcha-widget-copyright .copyright-icon,.theme-dark .status-icon {
         background-image:url(/img/captcha/widget_2x_combine.png);
         background-size: 101px 46px
@@ -266,7 +266,7 @@ body,html {
     background-position: 0 -23px
 }
 
-@media  only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
+@media    only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
     #l_captcha_widget .theme-light .loading .status-icon,.theme-light .captcha-widget-copyright .copyright-icon,.theme-light .status-icon {
         background-image:url(/img/captcha/widget_2x_combine.png);
         background-size: 101px 46px
@@ -276,7 +276,7 @@ body,html {
 .theme-transparent {
     border-radius: 1px;
     background: 0 0;
-    border: 1px solid #F1F1F1;
+    border: 1px solid transparent;
 }
 
 .theme-transparent .captcha-widget-text {
@@ -307,7 +307,7 @@ body,html {
     background-position: -23px -23px
 }
 
-@media  only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
+@media    only screen and (-o-min-device-pixel-ratio: 5/4),only screen and (-webkit-min-device-pixel-ratio:1.25),only screen and (min--moz-device-pixel-ratio:1.25),only screen and (min-device-pixel-ratio:1.25),only screen and (min-resolution:1.25dppx) {
     #l_captcha_widget .theme-transparent .loading .status-icon,.theme-transparent .captcha-widget-copyright .copyright-icon,.theme-transparent .status-icon {
         background-image:url(/img/captcha/widget_2x_combine.png);
         background-size: 101px 46px

@@ -10,6 +10,7 @@
     <div class="lc-header"></div>
     <div class="lc-main">
         <div class="lc-image-container" id="lc-image-panel">
+            <div id="lc_captcha_list" class="captcha-list" style="background-image: url(&quot;{{ route('frontend.captcha.fallimg', \Request::all()) }}&quot;);"></div>
             <div class="lc-success-overlay" id="lc_success_overlay">
                 <div class="overlay-panel">
                     <i class="overlay-icon"></i>
@@ -21,8 +22,6 @@
                     <i class="overlay-icon"></i>
                 </div>
                 <div class="overlay"></div>
-            </div>
-            <div class="captcha-list" style="background-image: url(&quot;{{ route('frontend.captcha.fallimg', \Request::all()) }}&quot;);">
             </div>
         </div>
     </div>

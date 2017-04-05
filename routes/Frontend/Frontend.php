@@ -22,7 +22,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('my/app', 'MyAppController@index')->name('my.app');
         Route::any('my/app/create', 'MyAppController@create')->name('my.app.create');
-        Route::any('my/app/detail/{id}', 'MyAppController@detail')->name('my.app.detail');
+        Route::any('my/app/detail/{key}', 'MyAppController@detail')->name('my.app.detail');
 
         /*
          * User Account Specific

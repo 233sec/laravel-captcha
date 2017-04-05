@@ -1,6 +1,6 @@
 @extends ('frontend.layouts.app')
 
-@section ('title', trans('labels.backend.access.users.management') . ' | ' . trans('labels.backend.access.users.deleted'))
+@section ('title', '我的应用')
 
 @section('after-styles')
     {{ Html::style("css/backend/plugin/datatables/dataTables.bootstrap.min.css") }}
@@ -64,7 +64,7 @@
                         (function(raw){
                             a = $('<a></a>');
                             a.attr('class', 'btn btn-primary btn-xs');
-                            a.attr('href', "{{ route('frontend.user.my.app.detail', ['id' => 9999]) }}".replace(/9999/g, raw.app_id));
+                            a.attr('href', "{{ route('frontend.user.my.app.detail', ['appkey' => 9999]) }}".replace(/9999/g, raw.key));
                             a.text('设置');
                             return a[0].outerHTML;
                         })(raw),
