@@ -70,13 +70,17 @@ class CaptchaController extends Controller
         $domain = preg_split('/[:\/]/', $request->server('HTTP_REFERER'), 8)[3] ?? '';
         if($app->domain != $domain && !preg_match('/'.$app->domain.'/', $request->server('HTTP_REFERER')))
         {
-            return Response::json([ 'success' => false, 'error_codes' => ['INVALID_DOMAIN'], ]);
+            $exception = '服务没有授权此域名使用';
+        }
+        else
+        {
+            $exception = null;
         }
 
         if(!$app->theme)
             $app->theme = 'default';
 
-        return view('frontend.captcha.anchor', ['theme' => $app->theme]);
+        return view('frontend.captcha.anchor', ['theme' => $app->theme])->withErrors($exception);
     }
 
     /**

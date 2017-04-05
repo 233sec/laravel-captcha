@@ -10,7 +10,7 @@
         window._p = []; window._p_l = 0;
         document.getElementsByClassName('g-recaptcha')[0].innerHTML = '';
         document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<input type="hidden" name="g-recaptcha-response" value="" id="g-recaptcha-response">';
-        document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<iframe id="xcaptcha_frame" style="display:none;border: 0px;width: 100%;height: 44px;" src="{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}">'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey'));
+        document.getElementsByClassName('g-recaptcha')[0].innerHTML += '<iframe id="xcaptcha_frame" style="border: 0px;width: 100%;height: 44px;" src="{{ route('frontend.captcha.anchor', ["k" => "_3_3_4_5_"]) }}">'.replace(/_3_3_4_5_/, document.getElementsByClassName('g-recaptcha')[0].getAttribute('data-sitekey'));
 
         window.messenger = new Messenger('parent', 'xCAPTCHA');
         window.messenger.addTarget($.id('xcaptcha_frame').contentWindow, 'xcaptcha_frame');
@@ -29,22 +29,24 @@
         // xCAPTCHA loading end
         
         window.onresize = function(){
-            var pos = $.id('xcaptcha_frame').getBoundingClientRect();
-            var width = pos.width;
-            var top = pos.top - 200 + window.scrollY;
-            if(top < 170)
-                top = pos.top + pos.height + 8;
+            try{
+                var pos = $.id('xcaptcha_frame').getBoundingClientRect();
+                var width = pos.width;
+                var top = pos.top - 200 + window.scrollY;
+                if(top < 170)
+                    top = pos.top + pos.height + 8;
 
-            var left = pos.left + window.scrollX;
-            if(width > 300)
-                left += (width - 300)/2;
+                var left = pos.left + window.scrollX;
+                if(width > 300)
+                    left += (width - 300)/2;
 
-            $.id('xcaptcha_frame_fallback').style.left = left + 'px';
-            $.id('xcaptcha_frame_fallback').style.top = top + 'px';
+                $.id('xcaptcha_frame_fallback').style.left = left + 'px';
+                $.id('xcaptcha_frame_fallback').style.top = top + 'px';
 
-            delete(pos);
-            delete(top);
-            delete(left);
+                delete(pos);
+                delete(top);
+                delete(left);
+            }catch(e){}
         };
 
         messenger.listen(function (msg) {
@@ -64,9 +66,8 @@
                     }catch(e){}
                 }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'INVISIBLE'){
-                try{ $.id('xcaptcha_frame').style.display = 'block'; }catch(e){ xcaptcha_frame.style.display = 'block'; }
             }else if(json.success == false && json.error_codes[0] == 'READY' && json.error_codes[1] == 'FALLBACK'){
-                try{ $.id('xcaptcha_frame').style.display = 'block'; _g_captcha_uc_callback(json); }catch(e){ xcaptcha_frame.style.display = 'block'; }
+                try{  _g_captcha_uc_callback(json); }catch(e){}
             }else if(json.success == false && json.error_codes[0] == 'CLOSE_FALLBACK'){
                 try{
                     $.id('xcaptcha_frame_fallback').style.display = 'none';
