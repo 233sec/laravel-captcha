@@ -11,6 +11,8 @@
             {{ $detail
                 ->template([
                         'created_at'=>['datetime'],
+                        'theme' => ['select', ['default' => '默认', 'light' => '扁平', 'transparent' => '透明', 'dark' => '黑暗']],
+                        'active' => ['select', ['1' => '启用', '0' => '不启用']],
                         'lengend_1' => ['lengend'],
                     ])
                 ->make() }}

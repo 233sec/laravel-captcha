@@ -64,7 +64,7 @@
                         (function(raw){
                             a = $('<a></a>');
                             a.attr('class', 'btn btn-primary btn-xs');
-                            a.attr('href', "{{ route('frontend.user.my.app.detail', ['id' => 9999]) }}".replace(/9999/g, raw.id));
+                            a.attr('href', "{{ route('frontend.user.my.app.detail', ['id' => 9999]) }}".replace(/9999/g, raw.app_id));
                             a.text('设置');
                             return a[0].outerHTML;
                         })(raw),

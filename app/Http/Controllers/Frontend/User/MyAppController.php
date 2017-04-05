@@ -35,19 +35,32 @@ class MyAppController extends Controller
             'instance' => 'app',
             'primary_key' => 'id',
             'i18n' => [
-                'lengend_1'     => '漏洞审核',
+                'lengend_1'     => '应用详情',
                 'id'            => 'ID',
-                'status'        => '状态',
+                'name'          => '应用名称',
+                'key'           => 'APPKEY',
+                'secret'        => 'APPSECRET',
+                'domain'        => '域名',
+                'theme'         => '样式',
                 'created_at'    => '创建时间',
                 'updated_at'    => '修改时间',
-                'deleted_at'    => '删除时间',
             ],
             'edit' => true
         ])
         ->queryBuilder(
             DB::table('app')
-            ->where([ 'id' => $id ])
-        )->ready(function($detail) use($id){
+            ->join('user_app', 'user_app.app_id', '=', 'app.id', 'inner')
+            ->where([ 'app.id' => $id ])
+            ->where(['user_app.user_id' => auth()->id()])
+            ->select(['app.*'])
+        )->onsubmit(function($update){
+            Redis::set('APP:KEY:'.$update['key'], json_encode($update));
+            unset($update['key']);
+            unset($update['secret']);
+            unset($update['created_at']);
+            unset($update['updated_at']);
+            return $update;
+        })->ready(function($detail) use($id){
             return view('frontend.user.myapp_detail', ['detail' => $detail, 'id' => $id]);
         });
     }
@@ -74,6 +87,7 @@ class MyAppController extends Controller
 
                     $data['active']     = 1;
                     $data['theme']      = 'default';
+                    $data['domain']     = 'yourdomain.com';
                     $data['key']        = $this->str_rand(20);
                     $data['secret']     = $this->str_rand(40);
                     $data['created_at'] = date('Y/m/d H:i:s');
