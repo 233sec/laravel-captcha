@@ -34,4 +34,5 @@
     </div>
 </div>
 <script src="{{ route('frontend.captcha.falljs') }}"></script>
+{!! $xjs !!}
 </body></html>

@@ -72,6 +72,10 @@
                 try{
                     $.id('xcaptcha_frame_fallback').style.display = 'none';
                     $.id('xcaptcha_frame_overlay').style.display = 'none';
+                    messenger.targets['xcaptcha_frame'].send(JSON.stringify({
+                        action: 'READY_INVISIBLE',
+                        callback: 'pow'
+                    }));
                 }catch(e){}
             }else if(json.success == false && json.error_codes[0] == 'OPEN_FALLBACK'){
                 // 回落验证 点击事件

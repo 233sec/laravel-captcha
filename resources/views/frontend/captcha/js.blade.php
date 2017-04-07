@@ -153,6 +153,12 @@
                                 }
                             }, 1000);
                             return;
+                        } else if(a.error_codes.length > 0 && a.error_codes[0] == 'INVISIBLE_PLEASE') {
+                            // 重新启用了 invisible 验证
+                            app.messenger.targets['parent'].send(JSON.stringify({
+                                success: false,
+                                error_codes: ['CLOSE_FALLBACK']
+                            }));
                         } else {
                             $.id('l_captcha_status').className = $.id('l_captcha_status').className.replace(/ loading/g, '');
                             $.id('l_captcha_widget').className = 'verify';

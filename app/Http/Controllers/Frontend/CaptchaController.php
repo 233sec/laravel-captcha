@@ -102,7 +102,40 @@ class CaptchaController extends Controller
         $appkey = $request->get('k', null);
         if(!$appkey)
             return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
-        return view('frontend.captcha.fallback');
+
+        $app = json_decode(Redis::get('APP:KEY:'.$appkey));
+        if(!$app)
+        {
+            $app = DB::table('app')->where(['key' => $appkey])->first();
+            if(!$app)
+                return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+            Redis::set('APP:KEY:'.$appkey, json_encode($app));
+        }
+
+        $ip = $request->ip();
+        $id = $request->session()->getId();
+
+        $q1 = Redis::get('RATE:IP:'.$ip);
+        $q2 = Redis::get('RATE:ID:'.$id);
+        $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
+
+        $x1 = Redis::get('NOT:IP:'.$ip);
+        $x2 = Redis::get('NOT:ID:'.$id);
+        $x3 = Redis::get('NOT:IPID:'.$ip.':'.$id);
+        $x4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
+        $x5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
+
+        if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3 || $x4 > 20 || $x5 > 10) # 回落验证
+        {
+            $js = '';
+        }
+        else # 隐藏验证
+        {
+            $js = "<script>messenger.targets['parent'].send(JSON.stringify({ success: false, error_codes: ['CLOSE_FALLBACK'] }));</script>";
+        }
+
+        return view('frontend.captcha.fallback', ['xjs' => $js]);
     }
 
     /**
@@ -222,6 +255,16 @@ class CaptchaController extends Controller
             if(!$appkey)
                 throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_APPKEY'], ]), 1);
 
+            $app = json_decode(Redis::get('APP:KEY:'.$appkey));
+            if(!$app)
+            {
+                $app = DB::table('app')->where(['key' => $appkey])->first();
+                if(!$app)
+                    return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
+
+                Redis::set('APP:KEY:'.$appkey, json_encode($app));
+            }
+
             $ip = $request->ip();
             $id = $request->session()->getId();
 
@@ -237,6 +280,7 @@ class CaptchaController extends Controller
 
             if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3 || $x4 > 20 || $x5 > 10) # 回落验证
             {
+                fall:
                 $q = $request->input('q');
                 $q = \GibberishAES\GibberishAES::dec($q, $this->g);
                 $q = json_decode(decrypt($q));
@@ -291,7 +335,10 @@ class CaptchaController extends Controller
                 $p = \GibberishAES\GibberishAES::dec($p, $q[1]);
 
                 if(!$q[0] || !$q[1] || !$q[2] || !Redis::del('POW:'.$q[0].':'.$p))
-                    throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_POW']]), 1);
+                    if(!$q[4])
+                        throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVISIBLE_PLEASE']]), 1);
+                    else
+                        throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_POW']]), 1);
 
                 if($q[2] != $q[0] * $p)
                     throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_POW_ANSWER']]), 1);
@@ -397,13 +444,12 @@ class CaptchaController extends Controller
             throw new \Exception(json_encode([
                 'success' => true,
                 'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
-                'hostname' => 'www.baidu.com',
+                'hostname' => $app->domain,
                 'error_codes' => [$type],
                 'response' => encrypt($challenge_response)
             ]), 1);
         }catch(\Exception $e){
-            // return response()->make($e->getMessage().$e->getLine())->withHeaders(['Content-Type' => 'text/plain']);
-            return response()->make(\GibberishAES\GibberishAES::enc($e->getMessage(), $q[1]))->withHeaders(['Content-Type' => 'text/plain']);
+            return response()->make(\GibberishAES\GibberishAES::enc($e->getMessage(), $q[1] ?? '-1'))->withHeaders(['Content-Type' => 'text/plain']);
         }
     }
 
@@ -496,7 +542,7 @@ class CaptchaController extends Controller
             return Response::json([
                 'success' => true,
                 'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
-                'hostname' => 'www.baidu.com',
+                'hostname' => $app->domain,
                 'error_codes' => [] 
             ]);
         }
