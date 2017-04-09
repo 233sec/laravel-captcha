@@ -27,7 +27,7 @@ class CaptchaController extends Controller
         $cache = Redis::get($key);
         if( $cache )
         {
-            $data = json_decode($cache, 1);
+            $data = json_decode($cache, 0);
             unset($cache);
         }
         else
@@ -42,7 +42,7 @@ class CaptchaController extends Controller
     protected function setCache(String $key, $data, int $expire = 600)
     {
         Redis::set($key, $data);
-        Redis::setex($key, $expire);
+        Redis::expire($key, $expire);
     }
 
     /**
@@ -143,14 +143,10 @@ class CaptchaController extends Controller
         $q1 = Redis::get('RATE:IP:'.$ip);
         $q2 = Redis::get('RATE:ID:'.$id);
         $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
+        $q4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
+        $q5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
 
-        $x1 = Redis::get('NOT:IP:'.$ip);
-        $x2 = Redis::get('NOT:ID:'.$id);
-        $x3 = Redis::get('NOT:IPID:'.$ip.':'.$id);
-        $x4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
-        $x5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
-
-        if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3 || $x4 > 20 || $x5 > 10) # 回落验证
+        if($q1 > 30 || $q2 > 10 || $q3 > 5 || $q4 > 20 || $q5 > 10) # 回落验证
         {
             $js = '';
         }
@@ -229,23 +225,16 @@ class CaptchaController extends Controller
         if(!$appkey)
             return Response::jsonp('console.error', json_encode([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'] ]));
 
-        if($request->query('d') == 1)
-            return Response::json(['RATE:IPID:'.$ip.':'.$id]);
-
         Redis::del('FALLBACK:c:'.$ip.':'.$id, 1);
 
         $q1 = Redis::get('RATE:IP:'.$ip);
         $q2 = Redis::get('RATE:ID:'.$id);
         $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
 
-        $x1 = Redis::get('NOT:IP:'.$ip);
-        $x2 = Redis::get('NOT:ID:'.$id);
-        $x3 = Redis::get('NOT:IPID:'.$ip.':'.$id);
-
         $factor_one = (int)    substr(mt_rand(100, 9999999), 1);
         $factor_two = (int)    substr(mt_rand(10000, 99999), 1);
         $factor_tri = (int)    $factor_one * $factor_two;
-        $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 >= 5 || $x2 >= 4 || $x3 >= 3) ? 0 : 1; # 是否invisible验证
+        $factor_fou = (int)    ($q1 > 30 || $q2 > 10 || $q3 > 5) ? 0 : 1; # 是否invisible验证
         $factor_hax = (string) md5($factor_tri);
         $factor_cga = (string) encrypt(json_encode([$factor_one, $factor_two, $factor_tri, $factor_hax, $factor_fou]));
 
@@ -279,12 +268,12 @@ class CaptchaController extends Controller
             if(!$appkey)
                 throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_APPKEY'], ]), 1);
 
-            $app = $this->getCache('APP:KEY:'.$appkey, function() use($appkey, $appsecret){
+            $app = $this->getCache('APP:KEY:'.$appkey, function() use($appkey){
                 $app = DB::table('app')->where(['key' => $appkey])->first();
                 if(!$app)
                     return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-                Redis::set('APP:SECRET:'.$appsecret, json_encode($app));
+                $this->setCache('APP:SECRET:'.$app->secret, json_encode($app), 600);
                 return $app;
             }, 600);
 
@@ -294,14 +283,10 @@ class CaptchaController extends Controller
             $q1 = Redis::get('RATE:IP:'.$ip);
             $q2 = Redis::get('RATE:ID:'.$id);
             $q3 = Redis::get('RATE:IPID:'.$ip.':'.$id);
+            $q4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
+            $q5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
 
-            $x1 = Redis::get('NOT:IP:'.$ip);
-            $x2 = Redis::get('NOT:ID:'.$id);
-            $x3 = Redis::get('NOT:IPID:'.$ip.':'.$id);
-            $x4 = Redis::get('COUNT:IP:'.$ip); //如果一个 IP 尝试在一天内使用超过20个应用
-            $x5 = Redis::get('COUNT:ID:'.$id); //如果一个 SESSION 尝试在一天内使用超过10个应用
-
-            if($q1 > 30 || $q2 > 10 || $q3 > 5 || $x1 > 5 || $x2 > 4 || $x3 > 3 || $x4 > 20 || $x5 > 10) # 回落验证
+            if($q1 > 30 || $q2 > 10 || $q3 > 5 || $q4 > 20 || $q5 > 10) # 回落验证
             {
                 fall:
                 $q = $request->input('q');
@@ -508,12 +493,12 @@ class CaptchaController extends Controller
             # 验证response
             # 验证response 和 appkey
             # 验证response 和 remoteip
-            $app = $this->getCache('APP:KEY:'.$appkey, function() use($appkey, $appsecret){
-                $app = DB::table('app')->where(['key' => $appkey])->first();
+            $app = $this->getCache('APP:SECRET:'.$appsecret, function() use($appsecret){
+                $app = DB::table('app')->where(['secret' => $appsecret])->first();
                 if(!$app)
                     return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-                Redis::set('APP:SECRET:'.$appsecret, json_encode($app));
+                $this->setCache('APP:KEY:'.$app->key, json_encode($app), 600);
                 return $app;
             }, 600);
 
