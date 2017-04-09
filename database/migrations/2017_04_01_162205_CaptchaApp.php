@@ -24,6 +24,7 @@ class CaptchaApp extends Migration
 
             $table->unique('name');
             $table->unique('key');
+            $table->unique('secret');
         });
     }
 

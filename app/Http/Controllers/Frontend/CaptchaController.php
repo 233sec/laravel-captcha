@@ -21,6 +21,30 @@ class CaptchaController extends Controller
         $ip = \Request::ip();
         $this->g = '_c'.md5($ip);
     }
+
+    protected function getCache(string $key, \Closure $fallback, int $expire = 600)
+    {
+        $cache = Redis::get($key);
+        if( $cache )
+        {
+            $data = json_decode($cache, 1);
+            unset($cache);
+        }
+        else
+        {
+            $data = $fallback();
+            $cache = json_encode($data);
+            $this->setCache($key, $cache, $expire);
+        }
+        return $data;
+    }
+
+    protected function setCache(String $key, $data, int $expire = 600)
+    {
+        Redis::set($key, $data);
+        Redis::setex($key, $expire);
+    }
+
     /**
      * Configure the validator instance.
      *
@@ -255,15 +279,14 @@ class CaptchaController extends Controller
             if(!$appkey)
                 throw new \Exception(json_encode(['success' => false, 'error_codes' => ['INVALID_APPKEY'], ]), 1);
 
-            $app = json_decode(Redis::get('APP:KEY:'.$appkey));
-            if(!$app)
-            {
+            $app = $this->getCache('APP:KEY:'.$appkey, function() use($appkey, $appsecret){
                 $app = DB::table('app')->where(['key' => $appkey])->first();
                 if(!$app)
                     return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-                Redis::set('APP:KEY:'.$appkey, json_encode($app));
-            }
+                Redis::set('APP:SECRET:'.$appsecret, json_encode($app));
+                return $app;
+            }, 600);
 
             $ip = $request->ip();
             $id = $request->session()->getId();
@@ -485,17 +508,14 @@ class CaptchaController extends Controller
             # 验证response
             # 验证response 和 appkey
             # 验证response 和 remoteip
-            $app = json_decode(Redis::get('APP:KEY:'.$appkey));
-            if(!$app)
-            {
+            $app = $this->getCache('APP:KEY:'.$appkey, function() use($appkey, $appsecret){
                 $app = DB::table('app')->where(['key' => $appkey])->first();
                 if(!$app)
                     return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPKEY'], ]);
 
-                Redis::set('APP:KEY:'.$appkey, json_encode($app));
-            }
-            if($app->secret != $appsecret)
-                return Response::json([ 'success' => false, 'error_codes' => ['INVALID_APPSECRET'], ]);
+                Redis::set('APP:SECRET:'.$appsecret, json_encode($app));
+                return $app;
+            }, 600);
 
             $response = decrypt($response);
 

@@ -81,6 +81,11 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapApiRoutes()
     {
+        Route::prefix('/recaptcha/api/')
+             ->middleware('api')
+             ->namespace($this->namespace)
+             ->group(base_path('routes/api.php'));
+
         Route::prefix('/recaptcha/api2/')
              ->middleware('api')
              ->namespace($this->namespace)
