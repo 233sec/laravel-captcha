@@ -24,6 +24,7 @@
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "5.4.*",
         "predis/predis": "^1.1",
+        "riverslei/payment": "~3.0",
         "tsssec/laravel-editable": "dev-next",
         "yajra/laravel-datatables-oracle": "^7.0"
     },

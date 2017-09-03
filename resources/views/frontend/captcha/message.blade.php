@@ -1,6 +1,3 @@
-@if (!1)
-<script>
-@endif
 /**
  * Gibberish-AES v1.0.0 - 2013-04-15
  * A lightweight Javascript Libray for OpenSSL compatible AES CBC encryption.
@@ -206,6 +203,3 @@ $.id = function(id){
         return window[id];
     }
 };
-@if (!1)
-    </script>
-@endif
