@@ -77,6 +77,12 @@
                         callback: 'pow'
                     }));
                 }catch(e){}
+            }else if(json.success == false && json.error_codes[0] == 'INVALID_POW'){
+                // 无效pow 重新加载pow
+                messenger.targets['xcaptcha_frame'].send(JSON.stringify({
+                    action: 'INVALID_POW',
+                    callback: 'pow'
+                }));
             }else if(json.success == false && json.error_codes[0] == 'OPEN_FALLBACK'){
                 // 回落验证 点击事件
                 try{

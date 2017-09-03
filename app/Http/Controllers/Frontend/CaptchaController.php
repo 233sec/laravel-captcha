@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Redis;
 use Response;
 use Image;
 use DB;
+use Payment\Common\PayException;
+use Payment\Client\Charge;
 
 /**
  * Class CaptchaController.
@@ -16,9 +18,9 @@ class CaptchaController extends Controller
 {
     protected $g;
 
-    public function __construct(\Request $request){
+    public function __construct(Request $request){
         if (getenv('APP_DEBUG')==true && class_exists('\Debugbar') ) \Debugbar::disable();
-        $ip = \Request::ip();
+        $ip = $request->ip();
         $this->g = '_c'.md5($ip);
     }
 
@@ -65,10 +67,29 @@ class CaptchaController extends Controller
      */
     public function demo(Request $request)
     {
+        $config = config('alipay');
+        $channel = 'ali_qr';// ali_bar
+        $payData = [
+            'body' => '测试',
+            'subject' => '杜蕾斯',
+            'order_no' => 'TX'.mt_rand(100000, 999999),
+            'timeout_express' => time() + 600,
+            'amount' => '1000',
+            'return_param' => 'buy some',
+            'goods_type' => 1,// 默认值为1，因此也可以省略
+            'store_id' => '',// 没有就不设置
+        ];
+        try {
+            // $str = Charge::run($channel, $config, $payData);
+            // echo htmlspecialchars($str);
+        } catch (PayException $e) {
+        }
+
         if($request->method() == 'POST'){
             $response = $request->input('g-recaptcha-response');
             return response()->redirectToRoute('frontend.captcha.siteverify', ['k' => getenv('XCAPTCHA_KEY'), 'secret' => getenv('XCAPTCHA_SECRET'), 'response' => $response]);
         }
+
         return view('frontend.captcha.demo');
     }
 
@@ -357,10 +378,10 @@ class CaptchaController extends Controller
                 $ua = parse_user_agent($ua);
 
                 # 如果是正常的浏览器
-                # 
+                #
                 # 加20分
 
-                if(in_array($ua['platform'], ['iOS', 'Android', 'Macintosh', 'Linux', 'Windows', 'NT', 'Windows NT']) && in_array($ua['browser'], ['Chrome', 'Safari', 'IE', 'ie', 'Sogou', 'SogouExplorer', '360', '360 Browser']) && 
+                if(in_array($ua['platform'], ['iOS', 'Android', 'Macintosh', 'Linux', 'Windows', 'NT', 'Windows NT']) && in_array($ua['browser'], ['Chrome', 'Safari', 'IE', 'ie', 'Sogou', 'SogouExplorer', '360', '360 Browser']) &&
                     isset($ua['version']) )
                 {
                     $score += 20;
@@ -368,7 +389,7 @@ class CaptchaController extends Controller
 
                 # IP 如果在5分钟内验证次数在5次以内
                 # 加20分
-                # 
+                #
                 # IP 如果非IDC机房IP
                 # 加10分
                 #
@@ -531,13 +552,13 @@ class CaptchaController extends Controller
                 return Response::json([
                     'success' => false,
                     'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
-                    'error_codes' => ['INVALID_CHALLENGE_RESPONSE'] 
+                    'error_codes' => ['INVALID_CHALLENGE_RESPONSE']
                 ]);
             if($remoteip && $ip != $remoteip)
                 return Response::json([
                     'success' => false,
                     'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
-                    'error_codes' => ['INVALID_CHALLENGE_IP'] 
+                    'error_codes' => ['INVALID_CHALLENGE_IP']
                 ]);
 
             Redis::del('CHALLENGE:RESPONSE:'.$response);
@@ -548,14 +569,14 @@ class CaptchaController extends Controller
                 'success' => true,
                 'challenge_ts' => gmdate('Y-m-d\TH:i:s\Z'),
                 'hostname' => $app->domain,
-                'error_codes' => [] 
+                'error_codes' => []
             ]);
         }
         catch(\Exception $e)
         {
             return Response::json([
                 'success' => false,
-                'error_codes' => [$e->getMessage()] 
+                'error_codes' => [$e->getMessage()]
             ]);
         }
     }

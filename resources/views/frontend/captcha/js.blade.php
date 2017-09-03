@@ -82,7 +82,7 @@
             (function(i,s,o,g,r,a,m){i['gxp']=r;i[r]=i[r]||function(){
                 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
                 m=s.getElementsByTagName(o)[0];a.async=1;a.className='xtv';a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','{!! route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) !!}'.replace(/9999/g, function(){return (new Date).getTime();}),'xa');
+            })(window,document,'script',"{!! route('frontend.captcha.pow', Request::all() + ['v'=>'9999']) !!}".replace(/9999/g, function(){return (new Date).getTime();}),'xa');
 
             app = this;
             app._tx = setInterval(function(){
